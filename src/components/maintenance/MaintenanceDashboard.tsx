@@ -1,0 +1,229 @@
+import { useMemo } from 'react';
+import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, LineChart, Line } from 'recharts';
+import { AlertTriangle, Clock, DollarSign, CheckCircle2, Wrench, TrendingDown } from 'lucide-react';
+import type { MaintenanceOrder } from '../../types/maintenance';
+
+interface Props {
+  orders: MaintenanceOrder[];
+}
+
+const COLORS = ['#0d9488', '#f59e0b', '#ef4444', '#3b82f6', '#6b7280', '#ec4899', '#8b5cf6'];
+
+const statusColors: Record<string, string> = {
+  'Aberto': '#ef4444',
+  'Em Andamento': '#f59e0b',
+  'Aguardando Peça': '#3b82f6',
+  'Concluído': '#10b981',
+  'Cancelado': '#6b7280',
+};
+
+const faultColors: Record<string, string> = {
+  'Elétrica': '#eab308',
+  'Operacional': '#3b82f6',
+  'Equipamento': '#f43f5e',
+};
+
+const originColors: Record<string, string> = {
+  'Operação (erro humano/procedimento)': '#f59e0b',
+  'Manutenção (execução/instalação)': '#3b82f6',
+  'Projeto/Equipamento (defeito/desgaste)': '#ef4444',
+};
+
+export function MaintenanceDashboard({ orders }: Props) {
+  const stats = useMemo(() => {
+    const total = orders.length;
+    const open = orders.filter(o => o.status === 'Aberto').length;
+    const inProgress = orders.filter(o => o.status === 'Em Andamento').length;
+    const completed = orders.filter(o => o.status === 'Concluído').length;
+    const completionRate = total > 0 ? ((completed / total) * 100).toFixed(1) : '0';
+
+    const completedOrders = orders.filter(o => o.status === 'Concluído' && o.started_at && o.completed_at);
+    let avgResolutionHours = 0;
+    if (completedOrders.length > 0) {
+      const totalHours = completedOrders.reduce((sum, o) => {
+        const start = new Date(o.started_at!).getTime();
+        const end = new Date(o.completed_at!).getTime();
+        return sum + (end - start) / (1000 * 60 * 60);
+      }, 0);
+      avgResolutionHours = totalHours / completedOrders.length;
+    }
+
+    const totalCost = orders.reduce((sum, o) => sum + o.actual_cost, 0);
+    const totalDowntime = orders.reduce((sum, o) => sum + o.actual_downtime_hours, 0);
+
+    const critical = orders.filter(o => o.priority === 'Crítica' && o.status !== 'Concluído' && o.status !== 'Cancelado').length;
+
+    return { total, open, inProgress, completed, completionRate, avgResolutionHours, totalCost, totalDowntime, critical };
+  }, [orders]);
+
+  const statusData = useMemo(() => {
+    const counts: Record<string, number> = {};
+    orders.forEach(o => { counts[o.status] = (counts[o.status] || 0) + 1; });
+    return Object.entries(counts).map(([name, value]) => ({ name, value, fill: statusColors[name] || '#6b7280' }));
+  }, [orders]);
+
+  const faultData = useMemo(() => {
+    const counts: Record<string, number> = {};
+    orders.forEach(o => { counts[o.fault_type] = (counts[o.fault_type] || 0) + 1; });
+    return Object.entries(counts).map(([name, value]) => ({ name, value, fill: faultColors[name] || '#6b7280' }));
+  }, [orders]);
+
+  const originData = useMemo(() => {
+    const counts: Record<string, number> = {};
+    orders.forEach(o => { counts[o.problem_origin] = (counts[o.problem_origin] || 0) + 1; });
+    return Object.entries(counts).map(([name, value]) => ({
+      name: name.split('(')[0].trim(),
+      fullName: name,
+      value,
+      fill: originColors[name] || '#6b7280',
+    }));
+  }, [orders]);
+
+  const priorityData = useMemo(() => {
+    const priorities = ['Baixa', 'Média', 'Alta', 'Crítica'];
+    const pColors = ['#0d9488', '#f59e0b', '#f97316', '#ef4444'];
+    return priorities.map((name, i) => ({
+      name,
+      value: orders.filter(o => o.priority === name).length,
+      fill: pColors[i],
+    }));
+  }, [orders]);
+
+  const monthlyTrend = useMemo(() => {
+    const months: Record<string, { opened: number; closed: number }> = {};
+    orders.forEach(o => {
+      const month = o.created_at.slice(0, 7);
+      if (!months[month]) months[month] = { opened: 0, closed: 0 };
+      months[month].opened++;
+      if (o.status === 'Concluído' && o.completed_at) {
+        const closedMonth = o.completed_at.slice(0, 7);
+        if (!months[closedMonth]) months[closedMonth] = { opened: 0, closed: 0 };
+        months[closedMonth].closed++;
+      }
+    });
+    return Object.entries(months)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .slice(-12)
+      .map(([month, data]) => ({
+        month: new Date(month + '-01').toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' }),
+        ...data,
+      }));
+  }, [orders]);
+
+  const formatCurrency = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+  const kpis = [
+    { label: 'Total de Chamados', value: stats.total, icon: Wrench, color: 'from-teal-500 to-teal-600' },
+    { label: 'Abertos', value: stats.open + stats.inProgress, icon: AlertTriangle, color: 'from-amber-500 to-orange-500' },
+    { label: 'Criticos Pendentes', value: stats.critical, icon: AlertTriangle, color: 'from-red-500 to-red-600' },
+    { label: 'Taxa de Conclusao', value: `${stats.completionRate}%`, icon: CheckCircle2, color: 'from-emerald-500 to-emerald-600' },
+    { label: 'Tempo Medio Resolucao', value: `${stats.avgResolutionHours.toFixed(1)}h`, icon: Clock, color: 'from-sky-500 to-blue-600' },
+    { label: 'Custo Total', value: formatCurrency(stats.totalCost), icon: DollarSign, color: 'from-rose-500 to-pink-600' },
+    { label: 'Downtime Total', value: `${stats.totalDowntime.toFixed(1)}h`, icon: TrendingDown, color: 'from-slate-500 to-slate-600' },
+    { label: 'Concluidos', value: stats.completed, icon: CheckCircle2, color: 'from-teal-600 to-cyan-600' },
+  ];
+
+  if (orders.length === 0) {
+    return (
+      <div className="text-center py-16">
+        <Wrench className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+        <p className="text-gray-500">Nenhum chamado registrado ainda.</p>
+        <p className="text-sm text-gray-400 mt-1">Crie um chamado para ver os indicadores aqui.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {kpis.map((kpi) => {
+          const Icon = kpi.icon;
+          return (
+            <div key={kpi.label} className="relative overflow-hidden bg-white rounded-2xl border border-gray-100 p-4 shadow-sm hover:shadow-md transition-shadow">
+              <div className={`absolute top-0 right-0 w-20 h-20 bg-gradient-to-br ${kpi.color} opacity-10 rounded-bl-[3rem]`} />
+              <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${kpi.color} flex items-center justify-center mb-2`}>
+                <Icon className="w-4.5 h-4.5 text-white" />
+              </div>
+              <p className="text-xs text-gray-500 font-medium">{kpi.label}</p>
+              <p className="text-xl font-bold text-gray-900 mt-0.5">{kpi.value}</p>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+          <h3 className="text-sm font-bold text-gray-700 mb-4">Tendencia Mensal</h3>
+          <ResponsiveContainer width="100%" height={260}>
+            <LineChart data={monthlyTrend}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+              <XAxis dataKey="month" tick={{ fontSize: 11 }} />
+              <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
+              <Tooltip />
+              <Legend />
+              <Line type="monotone" dataKey="opened" name="Abertos" stroke="#ef4444" strokeWidth={2} dot={{ r: 3 }} />
+              <Line type="monotone" dataKey="closed" name="Concluidos" stroke="#10b981" strokeWidth={2} dot={{ r: 3 }} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+          <h3 className="text-sm font-bold text-gray-700 mb-4">Distribuicao por Status</h3>
+          <ResponsiveContainer width="100%" height={260}>
+            <PieChart>
+              <Pie data={statusData} cx="50%" cy="50%" innerRadius={55} outerRadius={90} paddingAngle={3} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                {statusData.map((entry, i) => <Cell key={i} fill={entry.fill} />)}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+          <h3 className="text-sm font-bold text-gray-700 mb-4">Tipo de Falha (O que quebrou)</h3>
+          <ResponsiveContainer width="100%" height={260}>
+            <BarChart data={faultData} layout="vertical">
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+              <XAxis type="number" tick={{ fontSize: 11 }} allowDecimals={false} />
+              <YAxis type="category" dataKey="name" tick={{ fontSize: 12 }} width={100} />
+              <Tooltip />
+              <Bar dataKey="value" name="Chamados" radius={[0, 6, 6, 0]} barSize={28}>
+                {faultData.map((entry, i) => <Cell key={i} fill={entry.fill} />)}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+          <h3 className="text-sm font-bold text-gray-700 mb-4">Origem do Problema (Por que quebrou)</h3>
+          <ResponsiveContainer width="100%" height={260}>
+            <BarChart data={originData} layout="vertical">
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+              <XAxis type="number" tick={{ fontSize: 11 }} allowDecimals={false} />
+              <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={120} />
+              <Tooltip formatter={(value: any, _: any, props: any) => [value, props.payload.fullName]} />
+              <Bar dataKey="value" name="Chamados" radius={[0, 6, 6, 0]} barSize={28}>
+                {originData.map((entry, i) => <Cell key={i} fill={entry.fill} />)}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm lg:col-span-2">
+          <h3 className="text-sm font-bold text-gray-700 mb-4">Distribuicao por Prioridade</h3>
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={priorityData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+              <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+              <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
+              <Tooltip />
+              <Bar dataKey="value" name="Chamados" radius={[6, 6, 0, 0]} barSize={50}>
+                {priorityData.map((entry, i) => <Cell key={i} fill={entry.fill} />)}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+    </div>
+  );
+}

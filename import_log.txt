@@ -1,0 +1,18 @@
+===== LOG DE IMPORTAÇÃO DE DADOS =====
+
+Data: 03/02/2026, 23:46:25
+Arquivo: pontomais.xlsx
+Período: 2025-12-10 a 2026-01-20
+Total de registros: 293
+
+Dados processados com sucesso para todos os colaboradores:
+  ✓ ANNA CLARA DA SILVA MORAES
+  ✓ ICARO ASSIS DE ALMEIDA
+  ✓ ITALO DA SILVA NEUBANER
+  ✓ JOAO GUILHERME PINTO DE CASTRO FERREIRA
+  ✓ TABATTA CRISTINA MARCOLINO GONÇALVES
+
+OBSERVAÇÕES:
+- Todos os registros incluem: data, tipo de ausência, motivo, horas trabalhadas e saldo acumulado
+- Categorias identificadas: presente, ausência computável (atestados, faltas), folgas, férias, feriados
+- Dados importados estão prontos para análise no Dashboard de Absenteísmo

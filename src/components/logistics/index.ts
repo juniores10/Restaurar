@@ -1,0 +1,1 @@
+export { FreightManagement } from './FreightManagement';
