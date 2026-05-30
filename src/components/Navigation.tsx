@@ -16,7 +16,7 @@ interface NavigationProps {
 }
 
 export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, showNoticesPanel, isSidebarCollapsed = false, onToggleSidebar, onToggleEmployeeNotifications, showEmployeeNotifications }: NavigationProps) {
-  const { user, employeeProfile, signOut, canManageSystem, isEmployee, isTerceirizado } = useAuth();
+  const { user, employeeProfile, signOut, canManageSystem, isEmployee, isTerceirizado, selectedBranch, setSelectedBranch } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [unreadDocsCount, setUnreadDocsCount] = useState(0);
   const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
@@ -393,6 +393,16 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
                 <span className="hidden sm:inline">Pion G Plus - Sistema de Gestão Empresarial</span>
                 <span className="sm:hidden">Pion G Plus</span>
               </h1>
+              {selectedBranch && (
+                <button
+                  onClick={() => setSelectedBranch(null)}
+                  className="ml-3 hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white/90 text-xs font-medium transition-colors border border-white/10"
+                  title="Trocar filial"
+                >
+                  <Building2 className="w-3.5 h-3.5" />
+                  {selectedBranch.trade_name}
+                </button>
+              )}
             </div>
 
             <div className="hidden md:flex items-center space-x-4">

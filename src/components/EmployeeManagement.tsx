@@ -8,6 +8,7 @@ import type { DataType, Location, UserType } from '../types/database';
 import { EmployeeStatus } from '../types/database';
 import { UserPlus, CreditCard as Edit2, Trash2, Search, User, Briefcase, Users as UsersIcon, Shield, Building2, Eye, EyeOff, Lock, Calendar, Umbrella, Coffee, Camera, X, MapPin, FileText, Upload } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { useAuth } from '../contexts/AuthContext';
 
 interface ShiftTime {
   id: string;
@@ -18,6 +19,7 @@ interface ShiftTime {
 }
 
 export function EmployeeManagement() {
+  const { selectedBranch } = useAuth();
   const [employees, setEmployees] = useState<EmployeeWithRelations[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
   const [workplaces, setWorkplaces] = useState<Location[]>([]);
@@ -125,6 +127,8 @@ export function EmployeeManagement() {
   }
 
   const filteredEmployees = employees.filter((emp) => {
+    if (selectedBranch && emp.location_id !== selectedBranch.id) return false;
+
     const isAdminOrLider = emp.user_type_id === 1 || emp.user_type_id === 5;
     const isTerceirizado = emp.user_type_id === 4;
     let matchesTab = false;
@@ -139,14 +143,17 @@ export function EmployeeManagement() {
 
     const matchesSearch = emp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          emp.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         emp.cpf.includes(searchTerm);
+                         (emp.cpf && emp.cpf.includes(searchTerm));
     const matchesFilter = filterStatus === null || emp.status === filterStatus;
     const matchesDepartment = !filterDepartment || emp.department_id === filterDepartment;
     const matchesLocation = !filterLocation || emp.location_id === filterLocation;
     return matchesTab && matchesSearch && matchesFilter && matchesDepartment && matchesLocation;
   });
 
-  const employeesOnly = employees.filter(emp => emp.user_type_id !== 1 && emp.user_type_id !== 5);
+  const employeesOnly = employees.filter(emp => {
+    if (selectedBranch && emp.location_id !== selectedBranch.id) return false;
+    return emp.user_type_id !== 1 && emp.user_type_id !== 5;
+  });
 
   const getStatusLabel = (status: number) => {
     switch (status) {

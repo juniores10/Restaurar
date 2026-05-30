@@ -88,7 +88,7 @@ interface MainDashboardProps {
 }
 
 export function MainDashboard({ showNoticesPanel = false, onCloseNoticesPanel, onOpenNoticesPanel, onNavigate }: MainDashboardProps) {
-  const { isTerceirizado } = useAuth();
+  const { isTerceirizado, selectedBranch } = useAuth();
   const [birthdays, setBirthdays] = useState<Employee[]>([]);
   const [allEmployeesWithBirthday, setAllEmployeesWithBirthday] = useState<Employee[]>([]);
   const [vacationEmployees, setVacationEmployees] = useState<VacationEmployee[]>([]);
@@ -121,7 +121,7 @@ export function MainDashboard({ showNoticesPanel = false, onCloseNoticesPanel, o
 
   useEffect(() => {
     loadDashboardData();
-  }, []);
+  }, [selectedBranch?.id]);
 
   useEffect(() => {
     if (showNoticesPanel) {
@@ -152,12 +152,16 @@ export function MainDashboard({ showNoticesPanel = false, onCloseNoticesPanel, o
     try {
       const currentMonth = new Date().getMonth() + 1;
 
-      const { data, error } = await supabase
+      let query = supabase
         .from('employees')
         .select('id, name, birth_date, photo_url')
         .in('status', [0, 1, 2, 3])
         .not('birth_date', 'is', null)
         .neq('user_type_id', 1);
+
+      if (selectedBranch) query = query.eq('location_id', selectedBranch.id);
+
+      const { data, error } = await query;
 
       if (error) throw error;
 
@@ -182,13 +186,17 @@ export function MainDashboard({ showNoticesPanel = false, onCloseNoticesPanel, o
 
   const loadVacationEmployees = async () => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('employees')
         .select('id, name, photo_url, next_vacation_start, next_vacation_end, department:data_types!employees_department_id_fkey(description)')
         .in('status', [0, 1, 2, 3])
         .not('next_vacation_start', 'is', null)
         .neq('user_type_id', 1)
         .order('next_vacation_start', { ascending: true });
+
+      if (selectedBranch) query = query.eq('location_id', selectedBranch.id);
+
+      const { data, error } = await query;
 
       if (error) throw error;
       setAllVacationEmployees(data || []);
@@ -296,28 +304,24 @@ export function MainDashboard({ showNoticesPanel = false, onCloseNoticesPanel, o
 
   const loadStats = async () => {
     try {
-      const { count: totalEmployees } = await supabase
-        .from('employees')
-        .select('*', { count: 'exact', head: true })
-        .neq('user_type_id', 1);
+      let q1 = supabase.from('employees').select('*', { count: 'exact', head: true }).neq('user_type_id', 1);
+      let q2 = supabase.from('employees').select('*', { count: 'exact', head: true }).eq('status', 0).neq('user_type_id', 1);
+      let q3 = supabase.from('employees').select('*', { count: 'exact', head: true }).eq('status', 2).neq('user_type_id', 1);
+      let q4 = supabase.from('employees').select('*', { count: 'exact', head: true }).eq('status', 3).neq('user_type_id', 1);
+      let q5 = supabase.from('employees').select('birth_date, status').in('status', [0, 1, 2, 3]).not('birth_date', 'is', null).neq('user_type_id', 1);
 
-      const { count: activeOnly } = await supabase
-        .from('employees')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 0)
-        .neq('user_type_id', 1);
+      if (selectedBranch) {
+        q1 = q1.eq('location_id', selectedBranch.id);
+        q2 = q2.eq('location_id', selectedBranch.id);
+        q3 = q3.eq('location_id', selectedBranch.id);
+        q4 = q4.eq('location_id', selectedBranch.id);
+        q5 = q5.eq('location_id', selectedBranch.id);
+      }
 
-      const { count: suspended } = await supabase
-        .from('employees')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 2)
-        .neq('user_type_id', 1);
-
-      const { count: away } = await supabase
-        .from('employees')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 3)
-        .neq('user_type_id', 1);
+      const { count: totalEmployees } = await q1;
+      const { count: activeOnly } = await q2;
+      const { count: suspended } = await q3;
+      const { count: away } = await q4;
 
       const activeEmployees = (activeOnly || 0) + (suspended || 0) + (away || 0);
 
@@ -327,12 +331,7 @@ export function MainDashboard({ showNoticesPanel = false, onCloseNoticesPanel, o
         .eq('is_read', false);
 
       const currentMonth = new Date().getMonth() + 1;
-      const { data: allEmployees } = await supabase
-        .from('employees')
-        .select('birth_date, status')
-        .in('status', [0, 1, 2, 3])
-        .not('birth_date', 'is', null)
-        .neq('user_type_id', 1);
+      const { data: allEmployees } = await q5;
 
       const monthStr = String(currentMonth).padStart(2, '0');
       const birthdaysThisMonth = (allEmployees || []).filter(emp => {
@@ -354,35 +353,25 @@ export function MainDashboard({ showNoticesPanel = false, onCloseNoticesPanel, o
 
   const loadStatusCounts = async () => {
     try {
-      const { count: activeOnly } = await supabase
-        .from('employees')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 0)
-        .neq('user_type_id', 1);
+      let q1 = supabase.from('employees').select('*', { count: 'exact', head: true }).eq('status', 0).neq('user_type_id', 1);
+      let q2 = supabase.from('employees').select('*', { count: 'exact', head: true }).eq('status', 1).neq('user_type_id', 1);
+      let q3 = supabase.from('employees').select('*', { count: 'exact', head: true }).eq('status', 2).neq('user_type_id', 1);
+      let q4 = supabase.from('employees').select('*', { count: 'exact', head: true }).eq('status', 3).neq('user_type_id', 1);
+      let q5 = supabase.from('employees').select('*', { count: 'exact', head: true }).eq('status', 4).neq('user_type_id', 1);
 
-      const { count: vacation } = await supabase
-        .from('employees')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 1)
-        .neq('user_type_id', 1);
+      if (selectedBranch) {
+        q1 = q1.eq('location_id', selectedBranch.id);
+        q2 = q2.eq('location_id', selectedBranch.id);
+        q3 = q3.eq('location_id', selectedBranch.id);
+        q4 = q4.eq('location_id', selectedBranch.id);
+        q5 = q5.eq('location_id', selectedBranch.id);
+      }
 
-      const { count: suspended } = await supabase
-        .from('employees')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 2)
-        .neq('user_type_id', 1);
-
-      const { count: away } = await supabase
-        .from('employees')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 3)
-        .neq('user_type_id', 1);
-
-      const { count: terminated } = await supabase
-        .from('employees')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 4)
-        .neq('user_type_id', 1);
+      const { count: activeOnly } = await q1;
+      const { count: vacation } = await q2;
+      const { count: suspended } = await q3;
+      const { count: away } = await q4;
+      const { count: terminated } = await q5;
 
       const activeCount = (activeOnly || 0) + (suspended || 0) + (away || 0);
 

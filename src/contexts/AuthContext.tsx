@@ -16,10 +16,18 @@ interface EmployeeProfile {
   is_active: boolean;
 }
 
+export interface Branch {
+  id: string;
+  legal_name: string;
+  trade_name: string;
+}
+
 interface AuthContextType {
   user: User | null;
   employeeProfile: EmployeeProfile | null;
   loading: boolean;
+  selectedBranch: Branch | null;
+  setSelectedBranch: (branch: Branch | null) => void;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   forceLogout: () => Promise<void>;
@@ -38,6 +46,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [employeeProfile, setEmployeeProfile] = useState<EmployeeProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedBranch, setSelectedBranch] = useState<Branch | null>(() => {
+    const saved = localStorage.getItem('selectedBranch');
+    return saved ? JSON.parse(saved) : null;
+  });
   const employeeProfileRef = useRef<EmployeeProfile | null>(null);
 
   useEffect(() => {
@@ -179,11 +191,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       setEmployeeProfile(null);
       setUser(null);
+      setSelectedBranch(null);
+      localStorage.removeItem('selectedBranch');
       await supabase.auth.signOut();
     } catch (error) {
       console.error('Error signing out:', error);
       setEmployeeProfile(null);
       setUser(null);
+      setSelectedBranch(null);
+      localStorage.removeItem('selectedBranch');
     }
   }
 
@@ -233,6 +249,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return employeeProfile?.user_type_id === 1 || employeeProfile?.user_type_id === 2 || employeeProfile?.user_type_id === 5;
   }
 
+  function handleSetSelectedBranch(branch: Branch | null) {
+    setSelectedBranch(branch);
+    if (branch) {
+      localStorage.setItem('selectedBranch', JSON.stringify(branch));
+    } else {
+      localStorage.removeItem('selectedBranch');
+    }
+  }
+
   async function refreshProfile() {
     if (user) {
       await fetchEmployeeProfile(user.id);
@@ -244,6 +269,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       user,
       employeeProfile,
       loading,
+      selectedBranch,
+      setSelectedBranch: handleSetSelectedBranch,
       signIn,
       signOut,
       forceLogout,

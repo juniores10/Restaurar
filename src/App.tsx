@@ -1,9 +1,10 @@
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Login } from './components/Login';
+import { BranchSelection } from './components/BranchSelection';
 import { MainApp } from './components/MainApp';
 
 function AppContent() {
-  const { user, loading } = useAuth();
+  const { user, loading, selectedBranch } = useAuth();
 
   if (loading) {
     return (
@@ -18,6 +19,10 @@ function AppContent() {
 
   if (!user) {
     return <Login />;
+  }
+
+  if (!selectedBranch) {
+    return <BranchSelection />;
   }
 
   return <MainApp />;
