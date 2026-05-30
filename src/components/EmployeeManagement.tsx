@@ -98,7 +98,7 @@ export function EmployeeManagement() {
         dataTypeService.getPositions(),
         dataTypeService.getRoles(),
         userTypeService.getAll(),
-        teamService.getActive()
+        teamService.getActive().catch(() => [] as Team[])
       ]);
 
       const { data: sectorsData } = await supabase
