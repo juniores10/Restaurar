@@ -55,9 +55,12 @@ Deno.serve(async (req: Request) => {
         .upsert({
           auth_user_id: authData.user.id,
           email,
-          full_name: fullName,
+          name: fullName,
+          registration_number: 'ADMIN001',
+          cpf: '00000000000',
+          password: password,
           user_type_id: 1,
-          is_active: true,
+          status: 0,
         }, {
           onConflict: 'auth_user_id'
         });
