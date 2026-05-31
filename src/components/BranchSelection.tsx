@@ -125,6 +125,3 @@ export function BranchSelection() {
     </div>
   );
 }
-
-
-export { BranchSelection }
