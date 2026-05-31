@@ -45,6 +45,7 @@ export function EmployeeManagement() {
     cpf: '',
     rg: '',
     pis: '',
+    ctps: '',
     password: '',
     birth_date: '',
     location_id: '',
@@ -250,6 +251,7 @@ export function EmployeeManagement() {
       cpf: employee.cpf,
       rg: (employee as any).rg || '',
       pis: (employee as any).pis || '',
+      ctps: (employee as any).ctps || '',
       password: '',
       birth_date: employee.birth_date || '',
       location_id: employee.location_id || '',
@@ -332,6 +334,7 @@ export function EmployeeManagement() {
         cpf: editForm.cpf,
         rg: editForm.rg || null,
         pis: editForm.pis || null,
+        ctps: editForm.ctps || null,
         birth_date: editForm.birth_date || null,
         location_id: editForm.location_id || null,
         workplace_id: editForm.workplace_id || null,
@@ -412,6 +415,7 @@ export function EmployeeManagement() {
         cpf: editForm.cpf,
         rg: editForm.rg || null,
         pis: editForm.pis || null,
+        ctps: editForm.ctps || null,
         password: editForm.password,
         birth_date: editForm.birth_date || null,
         location_id: editForm.location_id || null,
@@ -976,6 +980,17 @@ export function EmployeeManagement() {
                 </div>
 
                 <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">CTPS</label>
+                  <input
+                    type="text"
+                    value={editForm.ctps}
+                    onChange={(e) => setEditForm({ ...editForm, ctps: e.target.value })}
+                    className="w-full px-4 py-2 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-all"
+                    placeholder="Ex: 1234567"
+                  />
+                </div>
+
+                <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-2">Matrícula</label>
                   <input
                     type="text"
@@ -1495,6 +1510,17 @@ export function EmployeeManagement() {
                     onChange={(e) => setEditForm({ ...editForm, pis: e.target.value })}
                     className="w-full px-4 py-2 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-all"
                     placeholder="Ex: 123.45678.90-1"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">CTPS</label>
+                  <input
+                    type="text"
+                    value={editForm.ctps}
+                    onChange={(e) => setEditForm({ ...editForm, ctps: e.target.value })}
+                    className="w-full px-4 py-2 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-all"
+                    placeholder="Ex: 1234567"
                   />
                 </div>
 
