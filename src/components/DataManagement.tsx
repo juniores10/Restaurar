@@ -1169,6 +1169,14 @@ export function DataManagement() {
               </table>
             </div>
           )}
+
+              {!isLoading && (
+                <div className="mt-4 pt-4 border-t border-gray-100 flex justify-end">
+                  <span className="text-sm text-gray-500 font-medium">
+                    Total: {items.length} {items.length === 1 ? 'item' : 'itens'} cadastrado{items.length === 1 ? '' : 's'}
+                  </span>
+                </div>
+              )}
             </>
           )}
         </div>
