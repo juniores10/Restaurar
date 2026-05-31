@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, CreditCard as Edit2, Trash2, Save, X, Building, Briefcase, Circle, GitBranch, Wrench, MapPin, Clock, Calendar, Building2, Tag, Target, Users } from 'lucide-react';
+import { Plus, CreditCard as Edit2, Trash2, Save, X, Building, Briefcase, Circle, GitBranch, Wrench, MapPin, Clock, Calendar, Building2, Tag, Target, Users, Layers } from 'lucide-react';
 import { dataTypeService } from '../services/dataTypeService';
 import { locationService, LocationType } from '../services/locationService';
 import { supabase } from '../lib/supabase';
@@ -11,7 +11,9 @@ import { TeamManagement } from './TeamManagement';
 import { MaintenanceCadastro } from './maintenance/MaintenanceCadastro';
 import PerformanceAdherenceManagement from './PerformanceAdherenceManagement';
 
-type TabType = 'branches' | 'workplaces' | 'departments' | 'positions' | 'functions' | 'status' | 'shift_times' | 'day_options' | 'productivity_categories' | 'goals_productivity' | 'company_logo' | 'teams' | 'maintenance_cadastro' | 'performance_adherence';
+type TabType = 'branches' | 'workplaces' | 'divisions' | 'positions' | 'functions' | 'status' | 'shift_times' | 'day_options' | 'productivity_categories' | 'goals_productivity' | 'company_logo' | 'teams' | 'maintenance_cadastro' | 'performance_adherence';
+
+type DivisionSubTab = 'areas' | 'departments' | 'sectors';
 
 interface Tab {
   id: TabType;
@@ -52,6 +54,7 @@ type ItemType = DataType | Location | ShiftTime | DayOption;
 
 export function DataManagement() {
   const [activeTab, setActiveTab] = useState<TabType>('branches');
+  const [divisionSubTab, setDivisionSubTab] = useState<DivisionSubTab>('areas');
   const [items, setItems] = useState<ItemType[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -80,7 +83,7 @@ export function DataManagement() {
   const tabs: Tab[] = [
     { id: 'branches', label: 'Filiais', singular: 'Filial', icon: GitBranch, typeCode: 0, useLocations: true, locationType: LocationType.BRANCH },
     { id: 'workplaces', label: 'Locais', singular: 'Local', icon: MapPin, typeCode: 0, useLocations: true, locationType: LocationType.WORKPLACE },
-    { id: 'departments', label: 'Departamentos/Setores', singular: 'Departamento/Setor', icon: Building, typeCode: 2 },
+    { id: 'divisions', label: 'Divisões', singular: 'Divisão', icon: Layers, typeCode: 0, useCustomTable: 'divisions' },
     { id: 'positions', label: 'Cargos', singular: 'Cargo', icon: Briefcase, typeCode: 3 },
     { id: 'functions', label: 'Funções', singular: 'Função', icon: Wrench, typeCode: 1 },
     { id: 'teams', label: 'Equipes', singular: 'Equipe', icon: Users, typeCode: 0, useCustomTable: 'teams' },
@@ -101,6 +104,26 @@ export function DataManagement() {
   const isCustomTable = !!currentTab.useCustomTable;
   const isShiftTimesTab = activeTab === 'shift_times';
   const isDayOptionsTab = activeTab === 'day_options';
+  const isDivisionsTab = activeTab === 'divisions';
+
+  const divisionTypeCodeMap: Record<DivisionSubTab, number> = {
+    areas: 7,
+    departments: 2,
+    sectors: 8
+  };
+
+  const divisionSubTabLabels: Record<DivisionSubTab, { label: string; singular: string }> = {
+    areas: { label: 'Áreas', singular: 'Área' },
+    departments: { label: 'Departamentos', singular: 'Departamento' },
+    sectors: { label: 'Setores', singular: 'Setor' }
+  };
+
+  const getEffectiveTypeCode = () => {
+    if (isDivisionsTab) {
+      return divisionTypeCodeMap[divisionSubTab];
+    }
+    return currentTab.typeCode;
+  };
 
   const getColumnLabels = () => {
     if (isShiftTimesTab) {
@@ -122,9 +145,21 @@ export function DataManagement() {
 
   useEffect(() => {
     loadItems();
-  }, [activeTab]);
+  }, [activeTab, divisionSubTab]);
 
   async function loadItems() {
+    if (isDivisionsTab) {
+      setIsLoading(true);
+      try {
+        const data = await dataTypeService.getByType(divisionTypeCodeMap[divisionSubTab]);
+        setItems(data);
+      } catch (error) {
+        console.error('Error loading items:', error);
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
     setIsLoading(true);
     try {
       if (isCustomTable && currentTab.useCustomTable) {
@@ -435,7 +470,7 @@ export function DataManagement() {
             description: formData.description,
             short_description: formData.short_description || null,
             status: formData.status,
-            type: currentTab.typeCode
+            type: getEffectiveTypeCode()
           });
         }
       }
@@ -482,14 +517,14 @@ export function DataManagement() {
               detailMessage += employees.map(emp => `- ${emp.name}`).join('\n');
               detailMessage += `\n\nRemova ou altere o turno destes funcionários antes de excluir.`;
             }
-          } else if (currentTab.id === 'departments') {
+          } else if (currentTab.id === 'divisions') {
             const { data: employees } = await supabase
               .from('employees')
               .select('name')
               .eq('department_id', id);
 
             if (employees && employees.length > 0) {
-              detailMessage += `Funcionários neste departamento:\n`;
+              detailMessage += `Funcionários nesta divisão:\n`;
               detailMessage += employees.map(emp => `- ${emp.name}`).join('\n');
             }
           } else if (currentTab.id === 'positions') {
@@ -610,9 +645,32 @@ export function DataManagement() {
             <PerformanceAdherenceManagement />
           ) : (
             <>
+              {isDivisionsTab && (
+                <div className="mb-6 border-b border-gray-200">
+                  <nav className="flex gap-1">
+                    {(['areas', 'departments', 'sectors'] as DivisionSubTab[]).map((sub) => (
+                      <button
+                        key={sub}
+                        onClick={() => {
+                          setDivisionSubTab(sub);
+                          handleCancelEdit();
+                        }}
+                        className={`px-5 py-2.5 text-sm font-medium rounded-t-lg transition-colors ${
+                          divisionSubTab === sub
+                            ? 'bg-blue-50 text-blue-700 border border-b-0 border-gray-200'
+                            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        {divisionSubTabLabels[sub].label}
+                      </button>
+                    ))}
+                  </nav>
+                </div>
+              )}
+
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-lg font-semibold text-gray-800">
-                  {currentTab.label}
+                  {isDivisionsTab ? divisionSubTabLabels[divisionSubTab].label : currentTab.label}
                 </h3>
                 <button
                   onClick={() => {
@@ -640,14 +698,14 @@ export function DataManagement() {
                   className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                 >
                   <Plus className="w-5 h-5" />
-                  Adicionar {currentTab.singular}
+                  Adicionar {isDivisionsTab ? divisionSubTabLabels[divisionSubTab].singular : currentTab.singular}
                 </button>
               </div>
 
           {showAddForm && (
             <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
               <h4 className="font-semibold text-gray-800 mb-4">
-                Nova {currentTab.singular}
+                {isDivisionsTab ? `Nova ${divisionSubTabLabels[divisionSubTab].singular}` : `Nova ${currentTab.singular}`}
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 {isShiftTimesTab ? (
