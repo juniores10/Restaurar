@@ -59,6 +59,7 @@ export function EmployeeManagement() {
     shift_id_2: '',
     status: 0,
     phone: '',
+    phone2: '',
     address: '',
     user_type_id: 3,
     registration_number: '',
@@ -273,6 +274,7 @@ export function EmployeeManagement() {
       shift_id_2: (employee as any).shift_id_2 || '',
       status: employee.status,
       phone: employee.phone || '',
+      phone2: (employee as any).phone2 || '',
       address: employee.address || '',
       user_type_id: employee.user_type_id || 3,
       registration_number: employee.registration_number || '',
@@ -354,6 +356,7 @@ export function EmployeeManagement() {
         status: editForm.status,
         is_active: editForm.status === 0,
         phone: editForm.phone || null,
+        phone2: editForm.phone2 || null,
         address: editForm.address || null,
         user_type_id: editForm.user_type_id,
         registration_number: editForm.registration_number || selectedEmployee.registration_number,
@@ -435,6 +438,7 @@ export function EmployeeManagement() {
         status: editForm.status,
         is_active: editForm.status === 0,
         phone: editForm.phone || null,
+        phone2: editForm.phone2 || null,
         address: editForm.address || null,
         user_type_id: editForm.user_type_id,
         registration_number: editForm.registration_number || `EMP${timestamp}`,
@@ -1073,6 +1077,16 @@ export function EmployeeManagement() {
                 </div>
 
                 <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Telefone 2</label>
+                  <input
+                    type="text"
+                    value={editForm.phone2}
+                    onChange={(e) => setEditForm({ ...editForm, phone2: e.target.value })}
+                    className="w-full px-4 py-2 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-all"
+                  />
+                </div>
+
+                <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-2">Filial</label>
                   <select
                     value={editForm.location_id}
@@ -1556,6 +1570,16 @@ export function EmployeeManagement() {
                     type="text"
                     value={editForm.phone}
                     onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                    className="w-full px-4 py-2 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Telefone 2</label>
+                  <input
+                    type="text"
+                    value={editForm.phone2}
+                    onChange={(e) => setEditForm({ ...editForm, phone2: e.target.value })}
                     className="w-full px-4 py-2 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-all"
                   />
                 </div>
