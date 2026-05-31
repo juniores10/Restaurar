@@ -715,9 +715,6 @@ export function EmployeeManagement() {
                   Filial
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                  Local de Trabalho
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                   Departamento
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
@@ -725,9 +722,6 @@ export function EmployeeManagement() {
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                   Cargo
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                  Função
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                   Tipo de Acesso
@@ -777,16 +771,6 @@ export function EmployeeManagement() {
                     )}
                   </td>
                   <td className="px-4 py-4">
-                    {employee.workplace ? (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium border border-blue-200">
-                        <MapPin className="w-3.5 h-3.5" />
-                        {employee.workplace.trade_name || employee.workplace.legal_name}
-                      </span>
-                    ) : (
-                      <span className="text-sm text-slate-400 italic">Sem local</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-4">
                     {employee.department ? (
                       <span className="text-sm text-slate-700">{employee.department.description}</span>
                     ) : (
@@ -808,13 +792,6 @@ export function EmployeeManagement() {
                         <Briefcase className="w-4 h-4" />
                         {employee.position.description}
                       </span>
-                    ) : (
-                      <span className="text-sm text-slate-400 italic">-</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-4">
-                    {employee.role ? (
-                      <span className="text-sm text-slate-700">{employee.role.description}</span>
                     ) : (
                       <span className="text-sm text-slate-400 italic">-</span>
                     )}
@@ -1100,25 +1077,6 @@ export function EmployeeManagement() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">
-                    <span className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4" />
-                      Local de Trabalho
-                    </span>
-                  </label>
-                  <select
-                    value={editForm.workplace_id}
-                    onChange={(e) => setEditForm({ ...editForm, workplace_id: e.target.value })}
-                    className="w-full px-4 py-2 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-all"
-                  >
-                    <option value="">Selecione um local</option>
-                    {workplaces.map((wpl) => (
-                      <option key={wpl.id} value={wpl.id}>{wpl.trade_name || wpl.legal_name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-2">Departamento</label>
                   <select
                     value={editForm.department_id}
@@ -1183,20 +1141,6 @@ export function EmployeeManagement() {
                     <option value="">Selecione um cargo</option>
                     {positions.map((pos) => (
                       <option key={pos.id} value={pos.id}>{pos.description}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Funcao</label>
-                  <select
-                    value={editForm.role_id}
-                    onChange={(e) => setEditForm({ ...editForm, role_id: e.target.value })}
-                    className="w-full px-4 py-2 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-all"
-                  >
-                    <option value="">Selecione uma função</option>
-                    {roles.map((role) => (
-                      <option key={role.id} value={role.id}>{role.description}</option>
                     ))}
                   </select>
                 </div>
@@ -1620,25 +1564,6 @@ export function EmployeeManagement() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">
-                    <span className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4" />
-                      Local de Trabalho
-                    </span>
-                  </label>
-                  <select
-                    value={editForm.workplace_id}
-                    onChange={(e) => setEditForm({ ...editForm, workplace_id: e.target.value })}
-                    className="w-full px-4 py-2 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-all"
-                  >
-                    <option value="">Selecione um local</option>
-                    {workplaces.map((wpl) => (
-                      <option key={wpl.id} value={wpl.id}>{wpl.trade_name || wpl.legal_name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-2">Departamento</label>
                   <select
                     value={editForm.department_id}
@@ -1703,20 +1628,6 @@ export function EmployeeManagement() {
                     <option value="">Selecione um cargo</option>
                     {positions.map((pos) => (
                       <option key={pos.id} value={pos.id}>{pos.description}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Funcao</label>
-                  <select
-                    value={editForm.role_id}
-                    onChange={(e) => setEditForm({ ...editForm, role_id: e.target.value })}
-                    className="w-full px-4 py-2 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-all"
-                  >
-                    <option value="">Selecione uma função</option>
-                    {roles.map((role) => (
-                      <option key={role.id} value={role.id}>{role.description}</option>
                     ))}
                   </select>
                 </div>
