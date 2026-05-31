@@ -25,6 +25,7 @@ export function EmployeeManagement() {
   const [workplaces, setWorkplaces] = useState<Location[]>([]);
   const [departments, setDepartments] = useState<DataType[]>([]);
   const [sectors, setSectors] = useState<DataType[]>([]);
+  const [areas, setAreas] = useState<DataType[]>([]);
   const [positions, setPositions] = useState<DataType[]>([]);
   const [roles, setRoles] = useState<DataType[]>([]);
   const [userTypes, setUserTypes] = useState<UserType[]>([]);
@@ -107,6 +108,14 @@ export function EmployeeManagement() {
         .from('data_types')
         .select('*')
         .eq('type', 7)
+        .eq('status', 0)
+        .order('description');
+
+      const { data: areasData } = await supabase
+        .from('data_types')
+        .select('*')
+        .eq('type', 8)
+        .eq('status', 0)
         .order('description');
 
       setEmployees(emp);
@@ -114,6 +123,7 @@ export function EmployeeManagement() {
       setWorkplaces(wpl);
       setDepartments(dept);
       setSectors(sectorsData || []);
+      setAreas(areasData || []);
       setPositions(pos);
       setRoles(rol);
       setUserTypes(types);
@@ -1112,8 +1122,9 @@ export function EmployeeManagement() {
                     className="w-full px-4 py-2 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-all"
                   >
                     <option value="">Selecione uma area</option>
-                    <option value="ADMINISTRATIVO">Administrativo</option>
-                    <option value="OPERACIONAL">Operacional</option>
+                    {areas.map((a) => (
+                      <option key={a.id} value={a.description}>{a.description}</option>
+                    ))}
                   </select>
                 </div>
 
@@ -1599,8 +1610,9 @@ export function EmployeeManagement() {
                     className="w-full px-4 py-2 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-all"
                   >
                     <option value="">Selecione uma area</option>
-                    <option value="ADMINISTRATIVO">Administrativo</option>
-                    <option value="OPERACIONAL">Operacional</option>
+                    {areas.map((a) => (
+                      <option key={a.id} value={a.description}>{a.description}</option>
+                    ))}
                   </select>
                 </div>
 
