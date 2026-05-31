@@ -108,14 +108,14 @@ export function EmployeeManagement() {
       const { data: sectorsData } = await supabase
         .from('data_types')
         .select('*')
-        .eq('type', 7)
+        .eq('type', 8)
         .eq('status', 0)
         .order('description');
 
       const { data: areasData } = await supabase
         .from('data_types')
         .select('*')
-        .eq('type', 8)
+        .eq('type', 7)
         .eq('status', 0)
         .order('description');
 
