@@ -491,7 +491,9 @@ export function DataManagement() {
     if (!confirm('Tem certeza que deseja excluir este item?')) return;
 
     try {
-      if (isCustomTable && currentTab.useCustomTable) {
+      if (isDivisionsTab) {
+        await dataTypeService.delete(id);
+      } else if (isCustomTable && currentTab.useCustomTable) {
         const { error } = await supabase.from(currentTab.useCustomTable).delete().eq('id', id);
         if (error) throw error;
       } else if (isLocationTab) {
@@ -583,7 +585,9 @@ export function DataManagement() {
   async function handleToggleStatus(id: string, currentStatus: number) {
     try {
       const newStatus = currentStatus === 0 ? 1 : 0;
-      if (isCustomTable && currentTab.useCustomTable) {
+      if (isDivisionsTab) {
+        await dataTypeService.update(id, { status: newStatus });
+      } else if (isCustomTable && currentTab.useCustomTable) {
         const { error } = await supabase.from(currentTab.useCustomTable).update({ status: newStatus }).eq('id', id);
         if (error) throw error;
       } else if (isLocationTab) {
