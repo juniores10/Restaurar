@@ -11,9 +11,9 @@ import { TeamManagement } from './TeamManagement';
 import { MaintenanceCadastro } from './maintenance/MaintenanceCadastro';
 import PerformanceAdherenceManagement from './PerformanceAdherenceManagement';
 
-type TabType = 'branches' | 'workplaces' | 'divisions' | 'positions' | 'functions' | 'status' | 'shift_times' | 'day_options' | 'productivity_categories' | 'goals_productivity' | 'company_logo' | 'teams' | 'maintenance_cadastro' | 'performance_adherence';
+type TabType = 'branches' | 'workplaces' | 'divisions' | 'functions' | 'status' | 'shift_times' | 'day_options' | 'productivity_categories' | 'goals_productivity' | 'company_logo' | 'teams' | 'maintenance_cadastro' | 'performance_adherence';
 
-type DivisionSubTab = 'areas' | 'departments' | 'sectors';
+type DivisionSubTab = 'areas' | 'departments' | 'sectors' | 'positions';
 
 interface Tab {
   id: TabType;
@@ -84,7 +84,6 @@ export function DataManagement() {
     { id: 'branches', label: 'Filiais', singular: 'Filial', icon: GitBranch, typeCode: 0, useLocations: true, locationType: LocationType.BRANCH },
     { id: 'workplaces', label: 'Locais', singular: 'Local', icon: MapPin, typeCode: 0, useLocations: true, locationType: LocationType.WORKPLACE },
     { id: 'divisions', label: 'Divisões', singular: 'Divisão', icon: Layers, typeCode: 0, useCustomTable: 'divisions' },
-    { id: 'positions', label: 'Cargos', singular: 'Cargo', icon: Briefcase, typeCode: 3 },
     { id: 'functions', label: 'Funções', singular: 'Função', icon: Wrench, typeCode: 1 },
     { id: 'teams', label: 'Equipes', singular: 'Equipe', icon: Users, typeCode: 0, useCustomTable: 'teams' },
     { id: 'status', label: 'Status', singular: 'Status', icon: Circle, typeCode: 6 },
@@ -109,13 +108,15 @@ export function DataManagement() {
   const divisionTypeCodeMap: Record<DivisionSubTab, number> = {
     areas: 7,
     departments: 2,
-    sectors: 8
+    sectors: 8,
+    positions: 3
   };
 
   const divisionSubTabLabels: Record<DivisionSubTab, { label: string; singular: string }> = {
     areas: { label: 'Áreas', singular: 'Área' },
     departments: { label: 'Departamentos', singular: 'Departamento' },
-    sectors: { label: 'Setores', singular: 'Setor' }
+    sectors: { label: 'Setores', singular: 'Setor' },
+    positions: { label: 'Cargos', singular: 'Cargo' }
   };
 
   const getEffectiveTypeCode = () => {
@@ -527,7 +528,7 @@ export function DataManagement() {
               detailMessage += `Funcionários nesta divisão:\n`;
               detailMessage += employees.map(emp => `- ${emp.name}`).join('\n');
             }
-          } else if (currentTab.id === 'positions') {
+          } else if (isDivisionsTab && divisionSubTab === 'positions') {
             const { data: employees } = await supabase
               .from('employees')
               .select('name')
@@ -648,7 +649,7 @@ export function DataManagement() {
               {isDivisionsTab && (
                 <div className="mb-6 border-b border-gray-200">
                   <nav className="flex gap-1">
-                    {(['areas', 'departments', 'sectors'] as DivisionSubTab[]).map((sub) => (
+                    {(['areas', 'departments', 'sectors', 'positions'] as DivisionSubTab[]).map((sub) => (
                       <button
                         key={sub}
                         onClick={() => {
