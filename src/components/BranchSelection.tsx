@@ -13,6 +13,12 @@ export function BranchSelection() {
     loadBranches();
   }, []);
 
+  useEffect(() => {
+    if (!loading && branches.length === 1) {
+      setSelectedBranch(branches[0]);
+    }
+  }, [loading, branches]);
+
   async function loadBranches() {
     try {
       const { data, error } = await supabase
@@ -119,3 +125,6 @@ export function BranchSelection() {
     </div>
   );
 }
+
+
+export { BranchSelection }
