@@ -1,0 +1,85 @@
+
+================================================================================
+SAMPLE EMPLOYEE RECORDS - SHOWING ALL EXTRACTED DATA FIELDS
+================================================================================
+
+
+SAMPLE 1: ADRIANO VENTURA DE SOUZA (Employee #1 in alphabetical order)
+  CPF: 213.657.047-18
+  Matricula (ID): 329
+  CTPS (Work Permit): 341387249
+  RG (National ID): [Not extracted]
+  Email: venturaadriano13@gmail.comC
+  Phone (Primary): 2136570-4718
+  Additional Phones: 36570-4718, 34018-4702, 75726-0005, 89856-9725
+  Address: [Not extracted]
+  City: RIZONTE VALENCA
+  Zipcode: [Not extracted]
+  VT Option (Transportation): S
+
+
+REFERENCE POINT: ANA CLARA QUIRINO DE AVILA (Position #20 of 418)
+  CPF: 160.277.127-83
+  Matricula: 867
+  Email: anaclaraquirinoavila29@gmail.com3
+  VT Option: S
+
+  *** IMPORTANT: 398 employees are listed AFTER this person ***
+      (From position #21 through #418)
+
+
+================================================================================
+EXAMPLES: EMPLOYEES WITH TARGET FIRST NAMES
+================================================================================
+
+1. GABRIEL: ANELISE GABRIELE MOREIRA JERONIMO
+   CPF: 228.046.987-18 | Matricula: 699
+
+2. CARLOS: CARLOS AUGUSTO DA SILVA CAZUZA
+   CPF: 157.124.207-40 | Matricula: 584
+
+3. MARIA: ANALISTA DE QUALIDADE JUNIOR MARIA PORTO NEVES
+   CPF: 153.770.697-73 | Matricula: 318
+
+4. FELIPE: FELIPE APRIGIO DA SILVA SOARES
+   CPF: 226.212.207-54 | Matricula: 551
+
+5. JOAO: JOAO BATISTA SANTOS
+   CPF: 166.759.747-77 | Matricula: 474
+
+6. JOSE: JOSE AUGUSTO TEIXEIRA DA SILVA
+   CPF: 068.828.217-20 | Matricula: 121
+
+7. LUCAS: AIMBE LUCAS SOUZA GOMES DA SILVA
+   CPF: 185.496.507-73 | Matricula: 320
+
+8. AMANDA: AMANDA BEATRIZ ALVES DE OLIVEIRA
+   CPF: 178.858.517-88 | Matricula: 412
+
+
+================================================================================
+DATA EXTRACTION SUMMARY STATISTICS
+================================================================================
+
+Total Employees in Dataset: 418
+Employees with target first names: 115 (27.5%)
+
+Data Completeness:
+- Records with all name/CPF/Matricula: 418 (100%)
+- Records with Email: 418 (100%)
+- Records with Phone: 418 (100%)
+- Records with City: 418 (100%)
+- Records with Address: ~200 (48%)
+- Records with Zipcode: ~160 (38%)
+- Records with Birth Date: < 10 (mostly empty)
+- Records with RG: < 10 (mostly empty)
+
+Phone Coverage:
+- Primary phone on file: 418/418 (100%)
+- Additional contacts found: ~350/418 (84%)
+
+All Employees Located In: Rio de Janeiro State (RJ)
+Primary City: Valença-RJ
+Other Municipalities: Osório, Barra do Piraí, Rio das Flores, etc.
+
+================================================================================

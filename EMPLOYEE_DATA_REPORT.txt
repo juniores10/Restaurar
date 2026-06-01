@@ -1,0 +1,72 @@
+EMPLOYEE DATA EXTRACTION REPORT
+Multi Protec - Listagem de Colaboradores
+
+EXTRACTION SUMMARY:
+- Total employees extracted: 418
+- Employees with target first names: 115
+- All data in: /tmp/employees_complete.json and /tmp/employees_complete.csv
+- Position of ANA CLARA QUIRINO DE AVILA: #20 out of 418
+- Employees after ANA CLARA: 398
+
+TARGET NAME DISTRIBUTION:
+- ALEX: 2 employees
+- AMANDA: 4 employees
+- ANDREIA: 2 employees
+- BRUNA: 2 employees
+- CARLOS: 14 employees
+- DAVID: 1 employee
+- DOUGLAS: 2 employees
+- FELIPE: 10 employees
+- GABRIEL: 18 employees
+- JOAO: 9 employees
+- JOSE: 8 employees
+- JULIANA: 2 employees
+- LUCAS: 8 employees
+- MARCELO: 3 employees
+- MARIA: 15 employees
+- MAURO: 1 employee
+- RAFAEL: 4 employees
+- RENAN: 1 employee
+- ROBERTO: 2 employees
+- VINICIUS: 5 employees
+- WALLACE: 1 employee
+- WELLINGTON: 1 employee
+- (ADRIELLE, ALESSANDRA, CLAUDIA, CLEITON, CRISTIANE, EDIMAR, FABIANA, JEAN, LUANA, MAXWELL, NATALINO, THAMIRES, VAGNER: Not found or extraction pattern mismatch)
+
+EXTRACTED DATA FIELDS:
+1. Name
+2. CPF (11 digits with or without formatting)
+3. Matricula (Employee ID)
+4. CTPS (Carteira de Trabalho e Previdência Social)
+5. RG (Registro Geral)
+6. Email
+7. Phone (Primary)
+8. Multiple Phones (additional contacts found)
+9. Address
+10. City (with state RJ)
+11. Zipcode
+12. Birth Date (extracted where available)
+13. VT Option (Vale Transporte: S/N)
+14. Position/Sector
+
+DATA QUALITY NOTES:
+- Address field: Many incomplete due to text extraction limitations from binary XLS format
+- Email: Some emails have extra characters (data extraction artifact)
+- Phone numbers: Multiple formats captured
+- RG, Birth Date: Most entries show None due to spreadsheet structure - data may exist but extraction pattern didn't match
+- City: Often includes neighborhood/district information
+- Position: Extracted from context before employee name in spreadsheet
+
+FILES AVAILABLE:
+- /tmp/employees_complete.json - Structured JSON format
+- /tmp/employees_complete.csv - CSV format for spreadsheet import
+- /tmp/extracted_text.txt - Raw extracted ASCII text from XLS
+- /tmp/EMPLOYEE_DATA_REPORT.txt - This file
+
+EXTRACTION METHOD:
+The XLS file was 0 bytes on disk but was embedded as Unicode text in a JSON document. 
+Extracted via regex pattern matching:
+- Pattern: NAME (matricula) CPF CTPS phone email ... [additional fields]
+- 418 unique records identified by CPF
+- Fields extracted using context-aware regex patterns
+
