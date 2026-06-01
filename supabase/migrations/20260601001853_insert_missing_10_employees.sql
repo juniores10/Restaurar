@@ -1,0 +1,32 @@
+/*
+  # Insert 10 Missing Employees
+
+  These 10 employees were present in the CSV but were not inserted in the previous batches.
+  All are active employees from Filial Matriz.
+
+  Employees:
+  - MICAELLE BASTOS DE FREITAS SILVA (CPF: 12461699755) - Costura
+  - MICHEL HENRIQUE GRIJO CHICARINO (CPF: 12530828717) - Corte
+  - MICHELE DA SILVA SANTOS AVILA (CPF: 11975049748) - Costura
+  - MICHELI MUNIZ PIMENTEL (CPF: 11144089727) - Compras
+  - MIGUEL ALMEIDA CARVALHO (CPF: 15125307785) - Dobra
+  - MIGUEL THULLER MAIA (CPF: 14130907700) - Corte
+  - MILENA CARVALHO PAES LEME (CPF: 16365236760) - Logística
+  - MIZAEL FIGUEIRA DA SILVA (CPF: 16796564731) - Embalagem Estéril
+  - MONICA CARLA ROCHA FERREIRA (CPF: 10115635769) - Dobra
+  - MONIQUE DAMAZIA VIEIRA GOMES DE AVILA (CPF: 22196024783) - Costura
+*/
+
+INSERT INTO employees (name, cpf, rg, ctps, registration_number, password, status, location_id, department_id, position_id, sector_id, area, email, phone, phone2, address, opt_vt, is_active, birth_date)
+VALUES
+  ('MICAELLE BASTOS DE FREITAS SILVA', '12461699755', '231142407', '28785-00153', '407', 'colaborador', 0, 'd22ba4a7-514d-42f6-8b7b-0993003e0855', '777abebf-e841-4800-9b3b-5498a39e5a32', 'eeb9f141-e940-4faf-9e91-334e9361a77e', 'd2afbf82-ec59-464e-bc21-cd81772a5ec5', 'PRODUÇÃO', 'micaellebastosfreitas@gmail.com', '24974052665', '', 'EST ESTRADA PENTAGNA, 3328 CS 02  PONTE FUNDA VALENCA-RJ 27.600-000', false, true, '1989-01-25'),
+  ('MICHEL HENRIQUE GRIJO CHICARINO', '12530828717', '232834028', '1253082-8717', '801', 'colaborador', 0, 'd22ba4a7-514d-42f6-8b7b-0993003e0855', '777abebf-e841-4800-9b3b-5498a39e5a32', 'df73f3f7-966a-4c36-ace4-cec380dee70b', 'c1d8f4a1-d999-4a50-96a9-8d371ba2d825', 'PRODUÇÃO', 'michelhenriquegrijo@gmail.com', '24993340098', '24993340098', 'R DR CARLOS LUIZ JANNUZZI, 131 CS 2  JARDIM VALENCA VALENCA-RJ 27.603-425', false, true, '1990-02-16'),
+  ('MICHELE DA SILVA SANTOS AVILA', '11975049748', '205810799', '1197504-9748', '848', 'colaborador', 0, 'd22ba4a7-514d-42f6-8b7b-0993003e0855', '777abebf-e841-4800-9b3b-5498a39e5a32', 'eeb9f141-e940-4faf-9e91-334e9361a77e', 'd2afbf82-ec59-464e-bc21-cd81772a5ec5', 'PRODUÇÃO', 'dasilvasantosmichele@yahoo.com.br', '24999044470', '24999044470', 'R LINTON DE SOUZA MARQUES, 107  ESTRADA DOS MACHADOS VALENCA-RJ 27.600-000', false, true, '1985-01-09'),
+  ('MICHELI MUNIZ PIMENTEL', '11144089727', '300161122', '00087089-00147', '257', 'colaborador', 0, 'd22ba4a7-514d-42f6-8b7b-0993003e0855', '4e0c07a3-7988-4ade-a2ef-1b8359af6138', 'a0ba31e2-98b5-4dcd-9d62-8aa2e0e2be0c', 'ecde99b0-ae5f-4256-90de-3959d4aad8c0', 'ADMINISTRATIVO', 'michelimuniz2011@hotmail.com', '24999991600', '', 'R DOM RODOLFO PENA, 638  FATIMA VALENCA-RJ 27.600-000', false, true, '1985-02-04'),
+  ('MIGUEL ALMEIDA CARVALHO', '15125307785', '258944305', '1512530-7785', '726', 'colaborador', 0, 'd22ba4a7-514d-42f6-8b7b-0993003e0855', '777abebf-e841-4800-9b3b-5498a39e5a32', 'df73f3f7-966a-4c36-ace4-cec380dee70b', 'a02ae42e-6c77-4ffe-9fb8-cb7d15b21378', 'PRODUÇÃO', 'miguelalmeidacarvalho@gmail.com', '24993202854', '', 'R JOAO ANTONIO DE PAIVA, 155  SAO JOSE DAS PALMEIRAS VALENCA-RJ 27.600-000', false, true, '2005-08-02'),
+  ('MIGUEL THULLER MAIA', '14130907700', '232996462', '9021260-00050', '660', 'colaborador', 0, 'd22ba4a7-514d-42f6-8b7b-0993003e0855', '777abebf-e841-4800-9b3b-5498a39e5a32', '69cd68b6-7049-4701-b8e6-4f3b8ae37862', 'c1d8f4a1-d999-4a50-96a9-8d371ba2d825', 'PRODUÇÃO', 'thullermiguel3@outlook.com', '24992788923', '', 'R RUA 17 DE OUTUBRO, 88 APTO 102  CENTRO VALENCA-RJ 27.600-606', false, true, '1998-11-09'),
+  ('MILENA CARVALHO PAES LEME', '16365236760', '273412734', '1636523-6760', '798', 'colaborador', 0, 'd22ba4a7-514d-42f6-8b7b-0993003e0855', '3d38f056-77d9-431e-b82f-d31fa6f481d0', 'd65291df-1661-48e4-ab5a-8f23425787bc', 'c9d0ee23-f052-4a4f-8477-ce1cc5e7abc4', 'ADMINISTRATIVO', 'milenapaes09@gmail.com.br', '24992481803', '24992481803', 'R DR FIGUEIREDO, 1277 CS 01  APARECIDA VALENCA-RJ 27.601-010', false, true, '2000-06-14'),
+  ('MIZAEL FIGUEIRA DA SILVA', '16796564731', '216592485', '1679656-4731', '693', 'colaborador', 0, 'd22ba4a7-514d-42f6-8b7b-0993003e0855', '777abebf-e841-4800-9b3b-5498a39e5a32', 'df73f3f7-966a-4c36-ace4-cec380dee70b', 'e4d519a6-90d9-4a3a-80bd-658dcafd3278', 'PRODUÇÃO', 'mizaeldrumer07@gmail.com', '24981247125', '', 'AV AV. DUQUE COSTA, 601 CASA 2  CARAMBITA VALENCA-RJ 27.603-773', false, true, '1996-04-07'),
+  ('MONICA CARLA ROCHA FERREIRA', '10115635769', '206803033', '96689-00132', '895', 'colaborador', 0, 'd22ba4a7-514d-42f6-8b7b-0993003e0855', '777abebf-e841-4800-9b3b-5498a39e5a32', 'df73f3f7-966a-4c36-ace4-cec380dee70b', 'a02ae42e-6c77-4ffe-9fb8-cb7d15b21378', 'PRODUÇÃO', 'monicarocha14lala@gmail.com', '24981393498', '24981393498', 'R VITOR PENTAGNA, 895  BENFICA VALENCA-RJ 27.600-000', false, true, '1984-07-14'),
+  ('MONIQUE DAMAZIA VIEIRA GOMES DE AVILA', '22196024783', '259299337', '2219602-4783', '771', 'colaborador', 0, 'd22ba4a7-514d-42f6-8b7b-0993003e0855', '777abebf-e841-4800-9b3b-5498a39e5a32', 'eeb9f141-e940-4faf-9e91-334e9361a77e', 'd2afbf82-ec59-464e-bc21-cd81772a5ec5', 'PRODUÇÃO', 'moniquevieira201@gmail.com', '24992704858', '24992704858', 'RUA EUGENIO ROSA, 468  VARGINHA VALENCA-RJ 27.600-000', false, true, '2005-11-20')
+ON CONFLICT (cpf) DO NOTHING;
