@@ -12,6 +12,8 @@ export interface MaintenanceEquipment {
   installation_date: string | null;
   hourly_cost: number;
   manual_url: string;
+  available_from: string | null;
+  available_to: string | null;
   inactivated_at: string | null;
   inactivation_reason: string;
   status: number;

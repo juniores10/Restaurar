@@ -38,7 +38,7 @@ const TABS: TabConfig[] = [
   { id: 'occurrences', label: 'Tipo de Falha', icon: AlertCircle, description: 'Tipos de falha e ocorrencias' },
 ];
 
-const emptyEquipmentForm = { name: '', tag_code: '', location_id: '', sector: '', manufacturer: '', serial_number: '', model: '', installation_date: '', hourly_cost: 0, manual_url: '' };
+const emptyEquipmentForm = { name: '', tag_code: '', location_id: '', sector: '', manufacturer: '', serial_number: '', model: '', installation_date: '', hourly_cost: 0, manual_url: '', available_from: '', available_to: '' };
 const emptySimpleForm = { name: '', description: '' };
 const emptyMaterialForm = { name: '', unit: 'un', equipment_id: '', warehouse_code: '', description: '' };
 const emptyTechnicianForm = { name: '', specialty_id: '' };
@@ -164,6 +164,8 @@ export function MaintenanceCadastro() {
         model: item.model || '',
         installation_date: item.installation_date || '',
         manual_url: item.manual_url || '',
+        available_from: item.available_from || '',
+        available_to: item.available_to || '',
       });
     } else if (activeTab === 'materials') {
       setFormData({
@@ -214,6 +216,8 @@ export function MaintenanceCadastro() {
           model: formData.model || '',
           installation_date: formData.installation_date || null,
           manual_url,
+          available_from: formData.available_from || null,
+          available_to: formData.available_to || null,
         };
         if (editingId) {
           await maintenanceCadastroService.updateEquipment(editingId, payload);
@@ -373,6 +377,12 @@ export function MaintenanceCadastro() {
       if (item.manufacturer) parts.push(item.manufacturer);
       if (item.model) parts.push(item.model);
       if (item.sector) parts.push(item.sector);
+      if (item.available_from && item.available_to) {
+        const [hS, mS] = item.available_from.split(':').map(Number);
+        const [hE, mE] = item.available_to.split(':').map(Number);
+        const diff = (hE * 60 + mE) - (hS * 60 + mS);
+        if (diff > 0) parts.push(`${(diff / 60).toFixed(1)}h/dia`);
+      }
       return parts.join(' • ') || '—';
     }
     if (activeTab === 'materials') {
@@ -679,6 +689,39 @@ export function MaintenanceCadastro() {
                         placeholder="0,00"
                         className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                       />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Disponivel De</label>
+                      <input
+                        type="time"
+                        value={formData.available_from ?? ''}
+                        onChange={e => setFormData(p => ({ ...p, available_from: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Disponivel Ate</label>
+                      <input
+                        type="time"
+                        value={formData.available_to ?? ''}
+                        onChange={e => setFormData(p => ({ ...p, available_to: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Total Horas Disponiveis/Dia</label>
+                      <div className="w-full px-3 py-2 border border-gray-100 rounded-lg text-sm bg-gray-50 font-semibold text-teal-700">
+                        {formData.available_from && formData.available_to
+                          ? (() => {
+                              const [hS, mS] = formData.available_from.split(':').map(Number);
+                              const [hE, mE] = formData.available_to.split(':').map(Number);
+                              const diff = (hE * 60 + mE) - (hS * 60 + mS);
+                              return diff > 0 ? `${(diff / 60).toFixed(1)}h` : '0h';
+                            })()
+                          : '—'}
+                      </div>
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-4">
