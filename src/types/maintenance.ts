@@ -11,7 +11,7 @@ export type ProblemOrigin =
 
 export type OrderPriority = 'Baixa' | 'Média' | 'Alta' | 'Crítica';
 
-export type OrderStatus = 'Aberto' | 'Em Andamento' | 'Aguardando Peça' | 'Concluído' | 'Cancelado';
+export type OrderStatus = 'Aberto' | 'Agendado' | 'Em Andamento' | 'Aguardando Peça' | 'Concluído' | 'Cancelado';
 
 export interface MaintenanceOrder {
   id: string;
@@ -33,6 +33,9 @@ export interface MaintenanceOrder {
   actual_cost: number;
   started_at: string | null;
   completed_at: string | null;
+  scheduled_start: string | null;
+  scheduled_end: string | null;
+  scheduled_materials: string[] | null;
   resolution_notes: string;
   created_by: string | null;
   created_at: string;
@@ -62,6 +65,7 @@ export const ORDER_PRIORITIES: OrderPriority[] = ['Baixa', 'Média', 'Alta', 'Cr
 
 export const ORDER_STATUSES: OrderStatus[] = [
   'Aberto',
+  'Agendado',
   'Em Andamento',
   'Aguardando Peça',
   'Concluído',

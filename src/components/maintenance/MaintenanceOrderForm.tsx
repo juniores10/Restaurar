@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { X, Save, Loader2 } from 'lucide-react';
+import { X, Save, Loader2, Plus, Trash2 } from 'lucide-react';
 import { maintenanceService } from '../../services/maintenanceService';
 import { maintenanceCadastroService, type MaintenanceEquipment, type MaintenanceTechnician, type MaintenanceLocation, type MaintenanceOccurrence } from '../../services/maintenanceCadastroService';
 import type { MaintenanceOrder, FaultType, MaintenanceType, ProblemOrigin, OrderPriority, OrderStatus } from '../../types/maintenance';
@@ -32,6 +32,9 @@ const emptyForm = {
   actual_cost: 0,
   started_at: null as string | null,
   completed_at: null as string | null,
+  scheduled_start: null as string | null,
+  scheduled_end: null as string | null,
+  scheduled_materials: [] as string[],
   resolution_notes: '',
 };
 
@@ -44,12 +47,14 @@ export function MaintenanceOrderForm({ order, onClose, onSaved }: Props) {
   const [locationList, setLocationList] = useState<MaintenanceLocation[]>([]);
   const [occurrenceList, setOccurrenceList] = useState<MaintenanceOccurrence[]>([]);
   const [sectorList, setSectorList] = useState<{ id: string; description: string }[]>([]);
+  const [materialList, setMaterialList] = useState<{ id: string; name: string; unit: string }[]>([]);
 
   useEffect(() => {
     maintenanceCadastroService.getEquipment().then(data => setEquipmentList(data.filter(e => e.status === 0)));
     maintenanceCadastroService.getTechnicians().then(data => setTechnicianList(data.filter(t => t.status === 0)));
     maintenanceCadastroService.getLocations().then(data => setLocationList(data.filter(l => l.status === 0)));
     maintenanceCadastroService.getOccurrences().then(data => setOccurrenceList(data.filter(o => o.status === 0)));
+    maintenanceCadastroService.getMaterials().then(data => setMaterialList(data.filter((m: any) => m.status === 0).map((m: any) => ({ id: m.id, name: m.name, unit: m.unit }))));
     supabase.from('data_types').select('id, description').eq('type', 8).eq('status', 0).order('description')
       .then(({ data }) => setSectorList(data || []));
   }, []);
@@ -75,6 +80,9 @@ export function MaintenanceOrderForm({ order, onClose, onSaved }: Props) {
         actual_cost: order.actual_cost,
         started_at: order.started_at,
         completed_at: order.completed_at,
+        scheduled_start: order.scheduled_start ?? null,
+        scheduled_end: order.scheduled_end ?? null,
+        scheduled_materials: order.scheduled_materials ?? [],
         resolution_notes: order.resolution_notes,
       });
     } else {
@@ -93,13 +101,27 @@ export function MaintenanceOrderForm({ order, onClose, onSaved }: Props) {
       alert('Informe o titulo do chamado');
       return;
     }
+    if (form.maintenance_type === 'Preventiva' && !order) {
+      if (!form.scheduled_start) {
+        alert('Informe a data de inicio do agendamento');
+        return;
+      }
+      if (!form.scheduled_end) {
+        alert('Informe a data final do agendamento');
+        return;
+      }
+    }
     setSaving(true);
     try {
+      const payload = { ...form };
+      if (!order && payload.maintenance_type === 'Preventiva') {
+        payload.status = 'Agendado' as OrderStatus;
+      }
       if (order) {
-        const { order_number: _, ...updates } = form;
+        const { order_number: _, ...updates } = payload;
         await maintenanceService.updateOrder(order.id, updates);
       } else {
-        const created = await maintenanceService.createOrder(form as any);
+        const created = await maintenanceService.createOrder(payload as any);
         await maintenanceService.notifyManagersAndAdmins(created.id);
       }
       onSaved();
@@ -214,6 +236,79 @@ export function MaintenanceOrderForm({ order, onClose, onSaved }: Props) {
               })}
             </div>
           </div>
+
+          {form.maintenance_type === 'Preventiva' && (
+            <div className="bg-teal-50/50 border border-teal-100 rounded-xl p-4 space-y-4">
+              <p className="text-sm font-semibold text-teal-700">Agendamento da Preventiva</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Data Inicio *</label>
+                  <input
+                    type="datetime-local"
+                    value={toLocalInputValue(form.scheduled_start)}
+                    onChange={e => set('scheduled_start', fromLocalInputValue(e.target.value))}
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Data Final *</label>
+                  <input
+                    type="datetime-local"
+                    value={toLocalInputValue(form.scheduled_end)}
+                    onChange={e => set('scheduled_end', fromLocalInputValue(e.target.value))}
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Materiais Planejados</label>
+                <div className="flex gap-2 mb-2">
+                  <select
+                    id="material-select"
+                    className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm"
+                    defaultValue=""
+                  >
+                    <option value="">Selecionar material...</option>
+                    {materialList
+                      .filter(m => !form.scheduled_materials.includes(m.name))
+                      .map(m => <option key={m.id} value={m.name}>{m.name} ({m.unit})</option>)}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const sel = document.getElementById('material-select') as HTMLSelectElement;
+                      if (sel.value) {
+                        set('scheduled_materials', [...form.scheduled_materials, sel.value]);
+                        sel.value = '';
+                      }
+                    }}
+                    className="px-3 py-2.5 bg-teal-600 text-white rounded-xl hover:bg-teal-700 transition-colors"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
+                {form.scheduled_materials.length > 0 && (
+                  <div className="space-y-1">
+                    {form.scheduled_materials.map((mat, idx) => (
+                      <div key={idx} className="flex items-center justify-between bg-white border border-gray-100 rounded-lg px-3 py-2">
+                        <span className="text-sm text-gray-700">{mat}</span>
+                        <button
+                          type="button"
+                          onClick={() => set('scheduled_materials', form.scheduled_materials.filter((_, i) => i !== idx))}
+                          className="p-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {form.scheduled_materials.length === 0 && (
+                  <p className="text-xs text-gray-400">Nenhum material adicionado</p>
+                )}
+              </div>
+            </div>
+          )}
 
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1">Tipo de Falha *</label>
