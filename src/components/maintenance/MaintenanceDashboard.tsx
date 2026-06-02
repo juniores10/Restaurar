@@ -63,6 +63,17 @@ export function MaintenanceDashboard({ orders }: Props) {
     return parseFloat((total / availabilityChartData.length).toFixed(1));
   }, [availabilityChartData]);
 
+  const availabilityPercentData = useMemo(() => {
+    return availabilityChartData.map(d => {
+      const total = d.disponivel;
+      const paradaPct = total > 0 ? parseFloat(((d.parada / total) * 100).toFixed(1)) : 0;
+      const disponivelPct = Math.max(0, parseFloat((100 - paradaPct).toFixed(1)));
+      return { name: d.name, fullName: d.fullName, disponivel: disponivelPct, parada: paradaPct };
+    }).sort((a, b) => b.disponivel - a.disponivel);
+  }, [availabilityChartData]);
+
+  const percentTarget = 85;
+
   const stats = useMemo(() => {
     const total = orders.length;
     const open = orders.filter(o => o.status === 'Aberto').length;
@@ -317,6 +328,25 @@ export function MaintenanceDashboard({ orders }: Props) {
               <Bar dataKey="disponivel" fill="#10b981" radius={[0, 6, 6, 0]} barSize={18} />
               <Bar dataKey="parada" fill="#ef4444" radius={[0, 6, 6, 0]} barSize={18} />
               <ReferenceLine x={availabilityTarget} stroke="#f59e0b" strokeWidth={2} strokeDasharray="6 4" label={{ value: `Meta ${availabilityTarget}h`, position: 'top', fill: '#f59e0b', fontSize: 11 }} />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+
+      {availabilityPercentData.length > 0 && (
+        <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+          <h3 className="text-sm font-bold text-gray-700 mb-1">Disponibilidade por Maquina (%)</h3>
+          <p className="text-xs text-gray-400 mb-4">Meta de disponibilidade = {percentTarget}%</p>
+          <ResponsiveContainer width="100%" height={Math.max(280, availabilityPercentData.length * 40)}>
+            <ComposedChart data={availabilityPercentData} layout="vertical" margin={{ left: 10, right: 20 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+              <XAxis type="number" tick={{ fontSize: 11 }} unit="%" domain={[0, 100]} />
+              <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={160} />
+              <Tooltip formatter={(value: any, name: string) => [`${value}%`, name === 'disponivel' ? '% Disponivel' : '% Parada']} labelFormatter={(label: any, payload: any) => payload?.[0]?.payload?.fullName || label} />
+              <Legend formatter={(value: string) => value === 'disponivel' ? '% Disponivel' : '% Parada'} />
+              <Bar dataKey="disponivel" fill="#10b981" radius={[0, 6, 6, 0]} barSize={18} stackId="stack" />
+              <Bar dataKey="parada" fill="#ef4444" radius={[0, 6, 6, 0]} barSize={18} stackId="stack" />
+              <ReferenceLine x={percentTarget} stroke="#f59e0b" strokeWidth={2} strokeDasharray="6 4" label={{ value: `Meta ${percentTarget}%`, position: 'top', fill: '#f59e0b', fontSize: 11 }} />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
