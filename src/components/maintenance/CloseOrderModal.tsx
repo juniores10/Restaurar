@@ -189,7 +189,17 @@ export function CloseOrderModal({ order, onClose, onSaved }: Props) {
       const completedAt = buildISODate(endDate, endTime) ?? new Date().toISOString();
       const downtimeHours = calcDowntimeHours();
       const faultTypeHistory = buildFaultTypeHistory();
-      const actualCost = (order.service_order_data as any)?.estimated_cost ?? order.estimated_cost ?? 0;
+      let actualCost = 0;
+      if (order.equipment) {
+        const { data: eqData } = await supabase
+          .from('maintenance_equipment')
+          .select('hourly_cost')
+          .eq('name', order.equipment)
+          .maybeSingle();
+        if (eqData?.hourly_cost) {
+          actualCost = Math.round(downtimeHours * Number(eqData.hourly_cost) * 100) / 100;
+        }
+      }
 
       await maintenanceService.updateOrder(order.id, {
         status: 'Concluído',
