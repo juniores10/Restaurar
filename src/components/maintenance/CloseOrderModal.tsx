@@ -189,12 +189,14 @@ export function CloseOrderModal({ order, onClose, onSaved }: Props) {
       const completedAt = buildISODate(endDate, endTime) ?? new Date().toISOString();
       const downtimeHours = calcDowntimeHours();
       const faultTypeHistory = buildFaultTypeHistory();
+      const actualCost = (order.service_order_data as any)?.estimated_cost ?? order.estimated_cost ?? 0;
 
       await maintenanceService.updateOrder(order.id, {
         status: 'Concluído',
         started_at: startedAt ?? order.started_at,
         completed_at: completedAt,
         actual_downtime_hours: downtimeHours,
+        actual_cost: actualCost,
         assigned_to: technicianId || order.assigned_to,
         fault_type: currentFaultType || order.fault_type,
         resolution_notes: resolutionNotes,
