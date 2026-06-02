@@ -48,20 +48,22 @@ export function ExpeditionManagement() {
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [filterMonth, setFilterMonth] = useState('');
-  const [employees, setEmployees] = useState<{ id: string; name: string }[]>([]);
+  const [expeditionOperators, setExpeditionOperators] = useState<string[]>([]);
 
   useEffect(() => {
     loadRecords();
-    loadEmployees();
+    loadOperators();
   }, [filterMonth]);
 
-  const loadEmployees = async () => {
+  const loadOperators = async () => {
     const { data } = await supabase
-      .from('employees')
-      .select('id, name')
-      .in('status', [0, 1, 2, 3])
-      .order('name');
-    if (data) setEmployees(data);
+      .from('expedition_records')
+      .select('shipped_by')
+      .not('shipped_by', 'is', null);
+    if (data) {
+      const unique = [...new Set(data.map(r => r.shipped_by as string))].sort();
+      setExpeditionOperators(unique);
+    }
   };
 
   const loadRecords = async () => {
@@ -503,10 +505,10 @@ export function ExpeditionManagement() {
                       onChange={e => setForm(prev => ({ ...prev, shipped_by: e.target.value }))}
                       className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
-                      <option value="">Selecione um colaborador</option>
-                      {employees.map(emp => (
-                        <option key={emp.id} value={emp.name.toLowerCase().split(' ')[0]}>
-                          {emp.name}
+                      <option value="">Selecione um operador</option>
+                      {expeditionOperators.map(op => (
+                        <option key={op} value={op}>
+                          {op.charAt(0).toUpperCase() + op.slice(1)}
                         </option>
                       ))}
                     </select>
