@@ -240,6 +240,44 @@ export function MaintenanceDashboard({ orders }: Props) {
         </div>
       )}
 
+      {availabilityChartData.length > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+            <h3 className="text-sm font-bold text-gray-700 mb-1">Disponibilidade vs Horas Paradas por Maquina</h3>
+            <p className="text-xs text-gray-400 mb-4">Linha de meta = media de disponibilidade ({availabilityTarget}h)</p>
+            <ResponsiveContainer width="100%" height={300}>
+              <ComposedChart data={availabilityChartData} margin={{ top: 20, right: 10, bottom: 40, left: 10 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <XAxis dataKey="name" tick={{ fontSize: 10, angle: -35, textAnchor: 'end' }} height={60} interval={0} />
+                <YAxis tick={{ fontSize: 11 }} unit="h" />
+                <Tooltip formatter={(value: any, name: string) => [`${value}h`, name === 'disponivel' ? 'Horas Disponiveis' : 'Horas Paradas']} labelFormatter={(label: any, payload: any) => payload?.[0]?.payload?.fullName || label} />
+                <Legend formatter={(value: string) => value === 'disponivel' ? 'Horas Disponiveis' : 'Horas Paradas'} />
+                <Bar dataKey="disponivel" fill="#10b981" radius={[6, 6, 0, 0]} barSize={24} />
+                <Bar dataKey="parada" fill="#ef4444" radius={[6, 6, 0, 0]} barSize={24} />
+                <ReferenceLine y={availabilityTarget} stroke="#f59e0b" strokeWidth={2} strokeDasharray="6 4" label={{ value: `Meta ${availabilityTarget}h`, position: 'insideTopRight', fill: '#f59e0b', fontSize: 11 }} />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+            <h3 className="text-sm font-bold text-gray-700 mb-1">Disponibilidade por Maquina (%)</h3>
+            <p className="text-xs text-gray-400 mb-4">Meta de disponibilidade = {percentTarget}%</p>
+            <ResponsiveContainer width="100%" height={300}>
+              <ComposedChart data={availabilityPercentData} margin={{ top: 20, right: 10, bottom: 40, left: 10 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <XAxis dataKey="name" tick={{ fontSize: 10, angle: -35, textAnchor: 'end' }} height={60} interval={0} />
+                <YAxis tick={{ fontSize: 11 }} unit="%" domain={[0, 100]} />
+                <Tooltip formatter={(value: any, name: string) => [`${value}%`, name === 'disponivel' ? '% Disponivel' : '% Parada']} labelFormatter={(label: any, payload: any) => payload?.[0]?.payload?.fullName || label} />
+                <Legend formatter={(value: string) => value === 'disponivel' ? '% Disponivel' : '% Parada'} />
+                <Bar dataKey="disponivel" fill="#10b981" radius={[6, 6, 0, 0]} barSize={24} stackId="stack" />
+                <Bar dataKey="parada" fill="#ef4444" radius={[6, 6, 0, 0]} barSize={24} stackId="stack" />
+                <ReferenceLine y={percentTarget} stroke="#f59e0b" strokeWidth={2} strokeDasharray="6 4" label={{ value: `Meta ${percentTarget}%`, position: 'insideTopRight', fill: '#f59e0b', fontSize: 11 }} />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
           <h3 className="text-sm font-bold text-gray-700 mb-4">Tendencia Mensal</h3>
@@ -313,44 +351,6 @@ export function MaintenanceDashboard({ orders }: Props) {
           </ResponsiveContainer>
         </div>
       </div>
-
-      {availabilityChartData.length > 0 && (
-        <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-          <h3 className="text-sm font-bold text-gray-700 mb-1">Disponibilidade vs Horas Paradas por Maquina</h3>
-          <p className="text-xs text-gray-400 mb-4">Linha de meta = media de disponibilidade ({availabilityTarget}h)</p>
-          <ResponsiveContainer width="100%" height={Math.max(280, availabilityChartData.length * 40)}>
-            <ComposedChart data={availabilityChartData} layout="vertical" margin={{ left: 10, right: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-              <XAxis type="number" tick={{ fontSize: 11 }} unit="h" />
-              <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={160} />
-              <Tooltip formatter={(value: any, name: string) => [`${value}h`, name === 'disponivel' ? 'Horas Disponiveis' : 'Horas Paradas']} labelFormatter={(label: any, payload: any) => payload?.[0]?.payload?.fullName || label} />
-              <Legend formatter={(value: string) => value === 'disponivel' ? 'Horas Disponiveis' : 'Horas Paradas'} />
-              <Bar dataKey="disponivel" fill="#10b981" radius={[0, 6, 6, 0]} barSize={18} />
-              <Bar dataKey="parada" fill="#ef4444" radius={[0, 6, 6, 0]} barSize={18} />
-              <ReferenceLine x={availabilityTarget} stroke="#f59e0b" strokeWidth={2} strokeDasharray="6 4" label={{ value: `Meta ${availabilityTarget}h`, position: 'top', fill: '#f59e0b', fontSize: 11 }} />
-            </ComposedChart>
-          </ResponsiveContainer>
-        </div>
-      )}
-
-      {availabilityPercentData.length > 0 && (
-        <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-          <h3 className="text-sm font-bold text-gray-700 mb-1">Disponibilidade por Maquina (%)</h3>
-          <p className="text-xs text-gray-400 mb-4">Meta de disponibilidade = {percentTarget}%</p>
-          <ResponsiveContainer width="100%" height={Math.max(280, availabilityPercentData.length * 40)}>
-            <ComposedChart data={availabilityPercentData} layout="vertical" margin={{ left: 10, right: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-              <XAxis type="number" tick={{ fontSize: 11 }} unit="%" domain={[0, 100]} />
-              <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={160} />
-              <Tooltip formatter={(value: any, name: string) => [`${value}%`, name === 'disponivel' ? '% Disponivel' : '% Parada']} labelFormatter={(label: any, payload: any) => payload?.[0]?.payload?.fullName || label} />
-              <Legend formatter={(value: string) => value === 'disponivel' ? '% Disponivel' : '% Parada'} />
-              <Bar dataKey="disponivel" fill="#10b981" radius={[0, 6, 6, 0]} barSize={18} stackId="stack" />
-              <Bar dataKey="parada" fill="#ef4444" radius={[0, 6, 6, 0]} barSize={18} stackId="stack" />
-              <ReferenceLine x={percentTarget} stroke="#f59e0b" strokeWidth={2} strokeDasharray="6 4" label={{ value: `Meta ${percentTarget}%`, position: 'top', fill: '#f59e0b', fontSize: 11 }} />
-            </ComposedChart>
-          </ResponsiveContainer>
-        </div>
-      )}
     </div>
   );
 }
