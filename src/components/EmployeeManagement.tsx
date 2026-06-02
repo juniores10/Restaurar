@@ -351,8 +351,6 @@ export function EmployeeManagement() {
         position_id: editForm.position_id || null,
         role_id: editForm.role_id || null,
         team_id: editForm.team_id || null,
-        shift_id: editForm.shift_id || null,
-        shift_id_2: editForm.shift_id_2 || null,
         status: editForm.status,
         is_active: editForm.status === 0,
         phone: editForm.phone || null,
@@ -405,7 +403,7 @@ export function EmployeeManagement() {
       setRgDocumentPreview(null);
     } catch (error) {
       console.error('Error updating employee:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      const errorMessage = error instanceof Error ? error.message : (error as any)?.message || JSON.stringify(error);
       alert(`Erro ao atualizar funcionario: ${errorMessage}`);
     }
   };
@@ -433,8 +431,6 @@ export function EmployeeManagement() {
         position_id: editForm.position_id || null,
         role_id: editForm.role_id || null,
         team_id: editForm.team_id || null,
-        shift_id: editForm.shift_id || null,
-        shift_id_2: editForm.shift_id_2 || null,
         status: editForm.status,
         is_active: editForm.status === 0,
         phone: editForm.phone || null,

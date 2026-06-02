@@ -524,6 +524,3 @@ export function ExpeditionManagement() {
     </div>
   );
 }
-
-
-export { ExpeditionManagement }
