@@ -21,7 +21,7 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
   const [unreadDocsCount, setUnreadDocsCount] = useState(0);
   const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
   const [unreadEmployeeNotificationsCount, setUnreadEmployeeNotificationsCount] = useState(0);
-  const [expandedMenus, setExpandedMenus] = useState<string[]>([]);
+  const [expandedMenus, setExpandedMenus] = useState<string[]>(['factory-maintenance']);
 
   useEffect(() => {
     if (employeeProfile && !canManageSystem()) {
