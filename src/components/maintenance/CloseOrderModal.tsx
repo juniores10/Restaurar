@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
-import { X, CheckCircle2, Calendar, Clock, Package, FileText, Save, Loader2, User, AlertCircle, AlertTriangle, History } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { X, CheckCircle2, Calendar, Clock, Package, FileText, Save, Loader2, User, AlertCircle, AlertTriangle, History, Camera, ImagePlus, Trash2, Image as ImageIcon } from 'lucide-react';
 import { maintenanceService } from '../../services/maintenanceService';
 import { maintenanceCadastroService, type MaintenanceMaterial, type MaintenanceTechnician, type MaintenanceOccurrence } from '../../services/maintenanceCadastroService';
+import { supabase } from '../../lib/supabase';
 import type { MaintenanceOrder } from '../../types/maintenance';
 import { MaterialSelector } from './MaterialSelector';
 
@@ -9,6 +10,14 @@ interface FaultTypeHistoryEntry {
   fault_type: string;
   changed_at: string;
   stage: 'abertura' | 'fechamento';
+}
+
+interface ClosePhoto {
+  file: File;
+  preview: string;
+  type: 'inicio' | 'fim';
+  uploading?: boolean;
+  url?: string;
 }
 
 interface Props {
@@ -24,6 +33,9 @@ function formatDateTime(iso: string) {
   });
 }
 
+const MIN_INICIO = 2;
+const MIN_FIM = 2;
+
 export function CloseOrderModal({ order, onClose, onSaved }: Props) {
   const [startDate, setStartDate] = useState('');
   const [startTime, setStartTime] = useState('');
@@ -37,6 +49,10 @@ export function CloseOrderModal({ order, onClose, onSaved }: Props) {
   const [technicians, setTechnicians] = useState<MaintenanceTechnician[]>([]);
   const [occurrences, setOccurrences] = useState<MaintenanceOccurrence[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [photos, setPhotos] = useState<ClosePhoto[]>([]);
+
+  const inicioInputRef = useRef<HTMLInputElement>(null);
+  const fimInputRef = useRef<HTMLInputElement>(null);
 
   const existingHistory: FaultTypeHistoryEntry[] = (order.service_order_data?.fault_type_history as FaultTypeHistoryEntry[] | undefined) ?? [];
 
@@ -46,6 +62,12 @@ export function CloseOrderModal({ order, onClose, onSaved }: Props) {
   useEffect(() => {
     maintenanceCadastroService.getTechnicians().then(setTechnicians).catch(() => {});
     maintenanceCadastroService.getOccurrences().then(setOccurrences).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      photos.forEach(p => URL.revokeObjectURL(p.preview));
+    };
   }, []);
 
   const buildISODate = (date: string, time: string): string | null => {
@@ -62,6 +84,41 @@ export function CloseOrderModal({ order, onClose, onSaved }: Props) {
     return Math.round((diffMs / 3600000) * 100) / 100;
   };
 
+  const photosInicio = photos.filter(p => p.type === 'inicio');
+  const photosFim = photos.filter(p => p.type === 'fim');
+
+  const addPhotos = (files: FileList, type: 'inicio' | 'fim') => {
+    const newPhotos: ClosePhoto[] = Array.from(files).map(file => ({
+      file,
+      preview: URL.createObjectURL(file),
+      type,
+    }));
+    setPhotos(prev => [...prev, ...newPhotos]);
+    setErrors(prev => ({ ...prev, photos: '' }));
+  };
+
+  const removePhoto = (index: number) => {
+    setPhotos(prev => {
+      URL.revokeObjectURL(prev[index].preview);
+      return prev.filter((_, i) => i !== index);
+    });
+  };
+
+  const uploadPhotos = async (): Promise<{ url: string; type: string; uploaded_at: string }[]> => {
+    const results: { url: string; type: string; uploaded_at: string }[] = [];
+    for (const photo of photos) {
+      const ext = photo.file.name.split('.').pop() ?? 'jpg';
+      const path = `${order.id}/${Date.now()}-${photo.type}.${ext}`;
+      const { error } = await supabase.storage
+        .from('maintenance-photos')
+        .upload(path, photo.file, { upsert: true });
+      if (error) throw new Error('Erro ao enviar foto: ' + error.message);
+      const { data: { publicUrl } } = supabase.storage.from('maintenance-photos').getPublicUrl(path);
+      results.push({ url: publicUrl, type: photo.type, uploaded_at: new Date().toISOString() });
+    }
+    return results;
+  };
+
   const validate = (): boolean => {
     const e: Record<string, string> = {};
     if (!startDate) e.startDate = 'Data de inicio obrigatoria';
@@ -73,6 +130,11 @@ export function CloseOrderModal({ order, onClose, onSaved }: Props) {
     }
     if (!technicianId) e.technicianId = 'Tecnico responsavel obrigatorio';
     if (!resolutionNotes.trim()) e.resolutionNotes = 'Descricao da solucao obrigatoria';
+    const inicioCount = photos.filter(p => p.type === 'inicio').length;
+    const fimCount = photos.filter(p => p.type === 'fim').length;
+    if (inicioCount < MIN_INICIO || fimCount < MIN_FIM) {
+      e.photos = `Obrigatorio: ${MIN_INICIO} fotos de inicio e ${MIN_FIM} fotos de fim do servico`;
+    }
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -102,6 +164,7 @@ export function CloseOrderModal({ order, onClose, onSaved }: Props) {
     if (!validate()) return;
     setSaving(true);
     try {
+      const uploadedPhotos = await uploadPhotos();
       const startedAt = buildISODate(startDate, startTime);
       const completedAt = buildISODate(endDate, endTime) ?? new Date().toISOString();
       const downtimeHours = calcDowntimeHours();
@@ -115,6 +178,7 @@ export function CloseOrderModal({ order, onClose, onSaved }: Props) {
         assigned_to: technicianId || order.assigned_to,
         fault_type: currentFaultType || order.fault_type,
         resolution_notes: resolutionNotes,
+        close_photos: uploadedPhotos,
         service_order_data: {
           ...(order.service_order_data ?? {}),
           fault_type_history: faultTypeHistory,
@@ -150,6 +214,109 @@ export function CloseOrderModal({ order, onClose, onSaved }: Props) {
       : existingHistory),
     ...pendingFaultChanges,
   ];
+
+  const PhotoSection = ({
+    type,
+    label,
+    items,
+    minCount,
+    inputRef,
+  }: {
+    type: 'inicio' | 'fim';
+    label: string;
+    items: ClosePhoto[];
+    minCount: number;
+    inputRef: React.RefObject<HTMLInputElement>;
+  }) => {
+    const allPhotos = photos;
+    const offsetIndex = type === 'fim' ? photos.filter(p => p.type === 'inicio').length : 0;
+    const missing = Math.max(0, minCount - items.length);
+
+    return (
+      <div>
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-1.5">
+            <span className="text-[11px] font-bold uppercase tracking-wide text-gray-500">{label}</span>
+            <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
+              items.length >= minCount ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-600'
+            }`}>
+              {items.length}/{minCount} min
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => inputRef.current?.click()}
+            className="flex items-center gap-1.5 text-[11px] font-semibold text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 px-2.5 py-1 rounded-lg transition-colors border border-emerald-200"
+          >
+            <ImagePlus className="w-3.5 h-3.5" />
+            Adicionar
+          </button>
+        </div>
+
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          capture="environment"
+          className="hidden"
+          onChange={e => { if (e.target.files?.length) addPhotos(e.target.files, type); e.target.value = ''; }}
+        />
+
+        {items.length === 0 ? (
+          <button
+            type="button"
+            onClick={() => inputRef.current?.click()}
+            className={`w-full h-24 border-2 border-dashed rounded-xl flex flex-col items-center justify-center gap-1.5 transition-colors ${
+              errors.photos ? 'border-red-300 bg-red-50' : 'border-gray-200 hover:border-emerald-300 hover:bg-emerald-50/30'
+            }`}
+          >
+            <Camera className={`w-6 h-6 ${errors.photos ? 'text-red-400' : 'text-gray-300'}`} />
+            <span className={`text-xs ${errors.photos ? 'text-red-500' : 'text-gray-400'}`}>
+              Toque para tirar foto ou selecionar
+            </span>
+          </button>
+        ) : (
+          <div className="grid grid-cols-3 gap-2">
+            {items.map((photo, localIdx) => {
+              const globalIdx = allPhotos.findIndex((p, gi) => {
+                const sameType = p.type === type;
+                const sameIndex = allPhotos.filter(x => x.type === type).indexOf(p) === localIdx;
+                return sameType && sameIndex;
+              });
+              return (
+                <div key={localIdx} className="relative group aspect-square rounded-xl overflow-hidden border border-gray-200">
+                  <img src={photo.preview} alt="" className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => removePhoto(globalIdx >= 0 ? globalIdx : photos.indexOf(photo))}
+                    className="absolute top-1 right-1 p-1 bg-black/60 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <Trash2 className="w-3.5 h-3.5 text-white" />
+                  </button>
+                  {localIdx < minCount && (
+                    <div className="absolute bottom-1 left-1 text-[9px] font-bold px-1.5 py-0.5 bg-black/60 text-white rounded-md">
+                      {localIdx + 1}/{minCount}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+            {missing > 0 && Array.from({ length: missing }).map((_, i) => (
+              <button
+                key={`empty-${i}`}
+                type="button"
+                onClick={() => inputRef.current?.click()}
+                className="aspect-square rounded-xl border-2 border-dashed border-gray-200 hover:border-emerald-300 hover:bg-emerald-50/30 flex items-center justify-center transition-colors"
+              >
+                <ImageIcon className="w-5 h-5 text-gray-300" />
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
@@ -379,6 +546,47 @@ export function CloseOrderModal({ order, onClose, onSaved }: Props) {
                 <AlertCircle className="w-3 h-3" />{errors.resolutionNotes}
               </p>
             )}
+          </div>
+
+          {/* Photo Section */}
+          <div>
+            <label className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3">
+              <Camera className="w-3.5 h-3.5 text-emerald-500" />
+              Fotos do Servico
+              <span className="text-red-500 ml-0.5">*</span>
+            </label>
+
+            <div className="space-y-4">
+              <div className="rounded-xl border border-gray-100 p-3 bg-gray-50/50">
+                <PhotoSection
+                  type="inicio"
+                  label="Fotos de Inicio"
+                  items={photosInicio}
+                  minCount={MIN_INICIO}
+                  inputRef={inicioInputRef}
+                />
+              </div>
+
+              <div className="rounded-xl border border-gray-100 p-3 bg-gray-50/50">
+                <PhotoSection
+                  type="fim"
+                  label="Fotos de Fim"
+                  items={photosFim}
+                  minCount={MIN_FIM}
+                  inputRef={fimInputRef}
+                />
+              </div>
+            </div>
+
+            {errors.photos && (
+              <p className="flex items-center gap-1 text-[11px] text-red-500 mt-2">
+                <AlertCircle className="w-3 h-3" />{errors.photos}
+              </p>
+            )}
+
+            <p className="text-[11px] text-gray-400 mt-2">
+              Minimo de {MIN_INICIO} fotos de inicio e {MIN_FIM} fotos de fim. Voce pode adicionar mais fotos se necessario.
+            </p>
           </div>
 
           {Object.values(errors).some(Boolean) && (
