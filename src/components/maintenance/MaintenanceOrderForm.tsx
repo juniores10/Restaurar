@@ -11,6 +11,7 @@ interface Props {
   order: MaintenanceOrder | null;
   onClose: () => void;
   onSaved: () => void;
+  initialDate?: string;
 }
 
 const emptyForm = {
@@ -38,7 +39,7 @@ const emptyForm = {
   resolution_notes: '',
 };
 
-export function MaintenanceOrderForm({ order, onClose, onSaved }: Props) {
+export function MaintenanceOrderForm({ order, onClose, onSaved, initialDate }: Props) {
   const { employeeProfile } = useAuth();
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
@@ -91,6 +92,11 @@ export function MaintenanceOrderForm({ order, onClose, onSaved }: Props) {
           ...prev,
           order_number: num,
           requested_by: employeeProfile?.full_name ?? '',
+          ...(initialDate ? {
+            maintenance_type: 'Preventiva' as MaintenanceType,
+            scheduled_start: initialDate,
+            scheduled_end: new Date(new Date(initialDate).getTime() + 3600000).toISOString(),
+          } : {}),
         }));
       });
     }

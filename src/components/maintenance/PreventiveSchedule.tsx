@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Calendar, ChevronLeft, ChevronRight, Wrench, Clock, MapPin } from 'lucide-react';
+import { Calendar, ChevronLeft, ChevronRight, Wrench, Clock, MapPin, Plus } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { MaintenanceOrderForm } from './MaintenanceOrderForm';
 
 interface PreventiveOrder {
   id: string;
@@ -20,6 +21,8 @@ export function PreventiveSchedule() {
   const [loading, setLoading] = useState(true);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [formInitialDate, setFormInitialDate] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     loadPreventiveOrders();
@@ -65,6 +68,18 @@ export function PreventiveSchedule() {
   const goToPrevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
   const goToNextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
   const goToToday = () => { setCurrentDate(new Date()); setSelectedDay(new Date().getDate()); };
+
+  const handleCreatePreventive = (day: number) => {
+    const date = new Date(year, month, day, 8, 0, 0);
+    setFormInitialDate(date.toISOString());
+    setShowForm(true);
+  };
+
+  const handleFormSaved = () => {
+    setShowForm(false);
+    setFormInitialDate(undefined);
+    loadPreventiveOrders();
+  };
 
   const today = new Date();
   const isToday = (day: number) => today.getFullYear() === year && today.getMonth() === month && today.getDate() === day;
@@ -154,14 +169,23 @@ export function PreventiveSchedule() {
               <div
                 key={day}
                 onClick={() => setSelectedDay(day)}
-                className={`min-h-[100px] border-b border-r border-gray-100 p-1.5 cursor-pointer transition-colors ${
+                className={`min-h-[100px] border-b border-r border-gray-100 p-1.5 cursor-pointer transition-colors group relative ${
                   isSelected ? 'bg-teal-50 ring-2 ring-inset ring-teal-400' : 'hover:bg-gray-50'
                 }`}
               >
-                <div className={`w-7 h-7 flex items-center justify-center rounded-full text-sm font-medium mb-1 ${
-                  isToday(day) ? 'bg-teal-600 text-white' : 'text-gray-700'
-                }`}>
-                  {day}
+                <div className="flex items-center justify-between">
+                  <div className={`w-7 h-7 flex items-center justify-center rounded-full text-sm font-medium mb-1 ${
+                    isToday(day) ? 'bg-teal-600 text-white' : 'text-gray-700'
+                  }`}>
+                    {day}
+                  </div>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleCreatePreventive(day); }}
+                    className="w-6 h-6 flex items-center justify-center rounded-full bg-teal-500 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-teal-600 shadow-sm"
+                    title="Cadastrar preventiva neste dia"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                  </button>
                 </div>
                 {dayOrders.length > 0 && (
                   <div className="space-y-0.5">
@@ -184,9 +208,18 @@ export function PreventiveSchedule() {
 
       {selectedDay && (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-          <h3 className="text-sm font-bold text-gray-700 mb-3">
-            Preventivas para {selectedDay} de {monthNames[month]}
-          </h3>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-bold text-gray-700">
+              Preventivas para {selectedDay} de {monthNames[month]}
+            </h3>
+            <button
+              onClick={() => handleCreatePreventive(selectedDay)}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-teal-600 text-white text-xs font-medium rounded-lg hover:bg-teal-700 transition-colors shadow-sm"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Cadastrar Preventiva
+            </button>
+          </div>
           {selectedDayOrders.length === 0 ? (
             <p className="text-sm text-gray-400 py-4 text-center">Nenhuma preventiva agendada para este dia.</p>
           ) : (
@@ -230,6 +263,15 @@ export function PreventiveSchedule() {
             </div>
           )}
         </div>
+      )}
+
+      {showForm && (
+        <MaintenanceOrderForm
+          order={null}
+          onClose={() => { setShowForm(false); setFormInitialDate(undefined); }}
+          onSaved={handleFormSaved}
+          initialDate={formInitialDate}
+        />
       )}
     </div>
   );
