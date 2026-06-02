@@ -1,7 +1,8 @@
-import { useMemo } from 'react';
-import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, LineChart, Line } from 'recharts';
+import { useMemo, useState, useEffect } from 'react';
+import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, LineChart, Line, ComposedChart, ReferenceLine } from 'recharts';
 import { AlertTriangle, Clock, DollarSign, CheckCircle2, Wrench, TrendingDown, TrendingUp, ShieldAlert } from 'lucide-react';
 import type { MaintenanceOrder } from '../../types/maintenance';
+import { supabase } from '../../lib/supabase';
 
 interface Props {
   orders: MaintenanceOrder[];
@@ -30,6 +31,38 @@ const originColors: Record<string, string> = {
 };
 
 export function MaintenanceDashboard({ orders }: Props) {
+  const [equipmentList, setEquipmentList] = useState<any[]>([]);
+
+  useEffect(() => {
+    supabase
+      .from('maintenance_equipment')
+      .select('id, name, available_from, available_to, status')
+      .eq('status', 0)
+      .then(({ data }) => setEquipmentList(data || []));
+  }, []);
+
+  const availabilityChartData = useMemo(() => {
+    return equipmentList
+      .filter(eq => eq.available_from && eq.available_to)
+      .map(eq => {
+        const [hS, mS] = eq.available_from.split(':').map(Number);
+        const [hE, mE] = eq.available_to.split(':').map(Number);
+        const availableHours = Math.max(0, ((hE * 60 + mE) - (hS * 60 + mS)) / 60);
+        const downtimeHours = orders
+          .filter(o => o.equipment === eq.name)
+          .reduce((sum, o) => sum + o.actual_downtime_hours, 0);
+        const shortName = eq.name.length > 20 ? eq.name.substring(0, 20) + '...' : eq.name;
+        return { name: shortName, fullName: eq.name, disponivel: parseFloat(availableHours.toFixed(1)), parada: parseFloat(downtimeHours.toFixed(1)) };
+      })
+      .sort((a, b) => b.disponivel - a.disponivel);
+  }, [equipmentList, orders]);
+
+  const availabilityTarget = useMemo(() => {
+    if (availabilityChartData.length === 0) return 0;
+    const total = availabilityChartData.reduce((s, d) => s + d.disponivel, 0);
+    return parseFloat((total / availabilityChartData.length).toFixed(1));
+  }, [availabilityChartData]);
+
   const stats = useMemo(() => {
     const total = orders.length;
     const open = orders.filter(o => o.status === 'Aberto').length;
@@ -269,6 +302,25 @@ export function MaintenanceDashboard({ orders }: Props) {
           </ResponsiveContainer>
         </div>
       </div>
+
+      {availabilityChartData.length > 0 && (
+        <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+          <h3 className="text-sm font-bold text-gray-700 mb-1">Disponibilidade vs Horas Paradas por Maquina</h3>
+          <p className="text-xs text-gray-400 mb-4">Linha de meta = media de disponibilidade ({availabilityTarget}h)</p>
+          <ResponsiveContainer width="100%" height={Math.max(280, availabilityChartData.length * 40)}>
+            <ComposedChart data={availabilityChartData} layout="vertical" margin={{ left: 10, right: 20 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+              <XAxis type="number" tick={{ fontSize: 11 }} unit="h" />
+              <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={160} />
+              <Tooltip formatter={(value: any, name: string) => [`${value}h`, name === 'disponivel' ? 'Horas Disponiveis' : 'Horas Paradas']} labelFormatter={(label: any, payload: any) => payload?.[0]?.payload?.fullName || label} />
+              <Legend formatter={(value: string) => value === 'disponivel' ? 'Horas Disponiveis' : 'Horas Paradas'} />
+              <Bar dataKey="disponivel" fill="#10b981" radius={[0, 6, 6, 0]} barSize={18} />
+              <Bar dataKey="parada" fill="#ef4444" radius={[0, 6, 6, 0]} barSize={18} />
+              <ReferenceLine x={availabilityTarget} stroke="#f59e0b" strokeWidth={2} strokeDasharray="6 4" label={{ value: `Meta ${availabilityTarget}h`, position: 'top', fill: '#f59e0b', fontSize: 11 }} />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+      )}
     </div>
   );
 }
