@@ -47,10 +47,7 @@ export function ExpeditionManagement() {
   const [editingRecord, setEditingRecord] = useState<ExpeditionRecord | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
-  const [filterMonth, setFilterMonth] = useState(() => {
-    const now = new Date();
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-  });
+  const [filterMonth, setFilterMonth] = useState('');
 
   useEffect(() => {
     loadRecords();
@@ -67,11 +64,10 @@ export function ExpeditionManagement() {
       const [y, m] = filterMonth.split('-').map(Number);
       const startDate = `${y}-${String(m).padStart(2, '0')}-01`;
       const endDate = new Date(y, m, 0).toISOString().split('T')[0];
-      query = query.or(`shipped_date.gte.${startDate},shipped_date.is.null`);
-      query = query.or(`shipped_date.lte.${endDate},shipped_date.is.null`);
+      query = query.gte('shipped_date', startDate).lte('shipped_date', endDate);
     }
 
-    const { data, error } = await query;
+    const { data, error } = await query.limit(500);
     if (!error && data) setRecords(data);
     setLoading(false);
   };
