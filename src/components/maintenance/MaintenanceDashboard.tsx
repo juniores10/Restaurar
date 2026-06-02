@@ -132,6 +132,22 @@ export function MaintenanceDashboard({ orders }: Props) {
       .sort((a, b) => b.value - a.value);
   }, [orders, technicianList]);
 
+  const maintenanceTypeHoursData = useMemo(() => {
+    const types = ['Corretiva', 'Preventiva', 'Preditiva', 'Predial'];
+    const typeColors: Record<string, string> = {
+      'Corretiva': '#ef4444',
+      'Preventiva': '#10b981',
+      'Preditiva': '#3b82f6',
+      'Predial': '#f59e0b',
+    };
+    return types.map(type => {
+      const totalHours = orders
+        .filter(o => o.maintenance_type === type)
+        .reduce((sum, o) => sum + o.actual_downtime_hours, 0);
+      return { name: type, hours: parseFloat(totalHours.toFixed(1)), fill: typeColors[type] };
+    });
+  }, [orders]);
+
   const stats = useMemo(() => {
     const total = orders.length;
     const open = orders.filter(o => o.status === 'Aberto').length;
@@ -376,23 +392,41 @@ export function MaintenanceDashboard({ orders }: Props) {
         </div>
       )}
 
-      {specialtyOrdersData.length > 0 && (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {specialtyOrdersData.length > 0 && (
+          <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+            <h3 className="text-sm font-bold text-gray-700 mb-1">Total de Ordens por Especialidade</h3>
+            <p className="text-xs text-gray-400 mb-4">Distribuicao de chamados agrupados pela especialidade do tecnico</p>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={specialtyOrdersData} margin={{ top: 10, right: 10, bottom: 40, left: 10 }} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <XAxis type="number" tick={{ fontSize: 11 }} allowDecimals={false} />
+                <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={140} />
+                <Tooltip formatter={(value: any) => [value, 'Ordens']} />
+                <Bar dataKey="value" name="Ordens" fill="#0d9488" radius={[0, 6, 6, 0]} barSize={22}>
+                  {specialtyOrdersData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+
         <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-          <h3 className="text-sm font-bold text-gray-700 mb-1">Total de Ordens por Especialidade</h3>
-          <p className="text-xs text-gray-400 mb-4">Distribuicao de chamados agrupados pela especialidade do tecnico</p>
+          <h3 className="text-sm font-bold text-gray-700 mb-1">Tempo Total por Tipo de Manutencao</h3>
+          <p className="text-xs text-gray-400 mb-4">Horas totais para Corretiva, Preventiva, Preditiva e Predial</p>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={specialtyOrdersData} margin={{ top: 10, right: 10, bottom: 40, left: 10 }} layout="vertical">
+            <BarChart data={maintenanceTypeHoursData} margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-              <XAxis type="number" tick={{ fontSize: 11 }} allowDecimals={false} />
-              <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={140} />
-              <Tooltip formatter={(value: any) => [value, 'Ordens']} />
-              <Bar dataKey="value" name="Ordens" fill="#0d9488" radius={[0, 6, 6, 0]} barSize={22}>
-                {specialtyOrdersData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+              <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+              <YAxis tick={{ fontSize: 11 }} unit="h" />
+              <Tooltip formatter={(value: any) => [`${value}h`, 'Horas']} />
+              <Bar dataKey="hours" name="Horas" radius={[6, 6, 0, 0]} barSize={36}>
+                {maintenanceTypeHoursData.map((entry, i) => <Cell key={i} fill={entry.fill} />)}
               </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>
-      )}
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
