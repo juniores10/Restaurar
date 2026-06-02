@@ -1,4 +1,4 @@
-import { Building2, Users, TrendingUp, MessageSquare, Bell, FileText, LogOut, Menu, X, Database, User, Home, CalendarDays, CalendarCheck, Clock, ChevronLeft, ChevronRight, DollarSign, Shield, ShieldCheck, UserX, Wrench, Activity, Truck } from 'lucide-react';
+import { Building2, Users, TrendingUp, MessageSquare, Bell, FileText, LogOut, Menu, X, Database, User, Home, CalendarDays, CalendarCheck, Clock, ChevronLeft, ChevronRight, ChevronDown, DollarSign, Shield, ShieldCheck, UserX, Wrench, Activity, Truck, Calendar } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { documentService } from '../services/documentService';
@@ -21,6 +21,7 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
   const [unreadDocsCount, setUnreadDocsCount] = useState(0);
   const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
   const [unreadEmployeeNotificationsCount, setUnreadEmployeeNotificationsCount] = useState(0);
+  const [expandedMenus, setExpandedMenus] = useState<string[]>([]);
 
   useEffect(() => {
     if (employeeProfile && !canManageSystem()) {
@@ -91,7 +92,9 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
     { id: 'suggestions', label: 'Sugestões', icon: MessageSquare },
     { id: 'notices', label: 'Quadro de Avisos', icon: Bell },
     { id: 'documents', label: 'Documentos', icon: FileText },
-    { id: 'factory-maintenance', label: 'OS Manutencao', icon: Wrench },
+    { id: 'factory-maintenance', label: 'OS Manutencao', icon: Wrench, subItems: [
+      { id: 'preventive-schedule', label: 'Agenda de Preventivas', icon: Calendar },
+    ] },
     { id: 'logistics', label: 'Logistica', icon: Truck },
     { id: 'data-management', label: 'Cadastros', icon: Database },
     { id: 'holidays', label: 'Feriados', icon: CalendarCheck },
@@ -105,7 +108,9 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
     { id: 'production', label: 'Produtividade', icon: TrendingUp },
     { id: 'suggestions', label: 'Sugestões', icon: MessageSquare },
     { id: 'documents', label: 'Documentos', icon: FileText },
-    { id: 'factory-maintenance', label: 'OS Manutencao', icon: Wrench },
+    { id: 'factory-maintenance', label: 'OS Manutencao', icon: Wrench, subItems: [
+      { id: 'preventive-schedule', label: 'Agenda de Preventivas', icon: Calendar },
+    ] },
   ];
 
   const terceirizadoMenuItems = [
@@ -115,7 +120,9 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
     { id: 'payroll', label: 'Holerites e Ponto', icon: DollarSign },
     { id: 'suggestions', label: 'Sugestões', icon: MessageSquare },
     { id: 'documents', label: 'Documentos', icon: FileText },
-    { id: 'factory-maintenance', label: 'OS Manutencao', icon: Wrench },
+    { id: 'factory-maintenance', label: 'OS Manutencao', icon: Wrench, subItems: [
+      { id: 'preventive-schedule', label: 'Agenda de Preventivas', icon: Calendar },
+    ] },
   ];
 
   const menuItems = canManageSystem() ? adminMenuItems : (isTerceirizado() ? terceirizadoMenuItems : employeeMenuItems);
@@ -224,28 +231,59 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
                 {menuItems.map((item) => {
                   const Icon = item.icon;
                   const showBadge = item.id === 'documents' && unreadDocsCount > 0;
+                  const hasSubItems = item.subItems && item.subItems.length > 0;
+                  const isExpanded = expandedMenus.includes(item.id);
+                  const isActive = currentView === item.id || (hasSubItems && item.subItems!.some(sub => currentView === sub.id));
                   return (
-                    <button
-                      key={item.id}
-                      onClick={() => {
-                        onNavigate(item.id);
-                        setIsMobileMenuOpen(false);
-                        if (item.id === 'documents') loadUnreadCount();
-                      }}
-                      className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all min-h-[44px] ${
-                        currentView === item.id
-                          ? 'bg-pion-cyan text-white shadow-lg shadow-pion-cyan/30'
-                          : 'text-white/70 hover:bg-white/10 hover:text-white'
-                      }`}
-                    >
-                      <Icon className="w-5 h-5 flex-shrink-0" />
-                      <span className="font-medium">{item.label}</span>
-                      {showBadge && (
-                        <span className="ml-auto px-2 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full min-w-[20px] text-center">
-                          {unreadDocsCount > 99 ? '99+' : unreadDocsCount}
-                        </span>
+                    <div key={item.id}>
+                      <button
+                        onClick={() => {
+                          if (hasSubItems) {
+                            setExpandedMenus(prev => prev.includes(item.id) ? prev.filter(id => id !== item.id) : [...prev, item.id]);
+                          }
+                          onNavigate(item.id);
+                          if (!hasSubItems) setIsMobileMenuOpen(false);
+                          if (item.id === 'documents') loadUnreadCount();
+                        }}
+                        className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all min-h-[44px] ${
+                          isActive
+                            ? 'bg-pion-cyan text-white shadow-lg shadow-pion-cyan/30'
+                            : 'text-white/70 hover:bg-white/10 hover:text-white'
+                        }`}
+                      >
+                        <Icon className="w-5 h-5 flex-shrink-0" />
+                        <span className="font-medium">{item.label}</span>
+                        {showBadge && (
+                          <span className="ml-auto px-2 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full min-w-[20px] text-center">
+                            {unreadDocsCount > 99 ? '99+' : unreadDocsCount}
+                          </span>
+                        )}
+                        {hasSubItems && (
+                          <ChevronDown className={`w-4 h-4 ml-auto transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                        )}
+                      </button>
+                      {hasSubItems && isExpanded && (
+                        <div className="ml-4 mt-1 space-y-1 border-l border-white/20 pl-3">
+                          {item.subItems!.map(sub => {
+                            const SubIcon = sub.icon;
+                            return (
+                              <button
+                                key={sub.id}
+                                onClick={() => { onNavigate(sub.id); setIsMobileMenuOpen(false); }}
+                                className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-all min-h-[40px] ${
+                                  currentView === sub.id
+                                    ? 'bg-white/20 text-white font-medium'
+                                    : 'text-white/60 hover:bg-white/10 hover:text-white'
+                                }`}
+                              >
+                                <SubIcon className="w-4 h-4 flex-shrink-0" />
+                                <span>{sub.label}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
                       )}
-                    </button>
+                    </div>
                   );
                 })}
               </nav>
@@ -303,39 +341,70 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
             </div>
           )}
 
-          <nav className="p-4 space-y-2">
+          <nav className="p-4 space-y-1">
             {menuItems.map((item) => {
               const Icon = item.icon;
               const showBadge = item.id === 'documents' && unreadDocsCount > 0;
+              const hasSubItems = item.subItems && item.subItems.length > 0;
+              const isExpanded = expandedMenus.includes(item.id);
+              const isActive = currentView === item.id || (hasSubItems && item.subItems!.some(sub => currentView === sub.id));
               return (
-                <button
-                  key={item.id}
-                  onClick={() => {
-                    onNavigate(item.id);
-                    if (item.id === 'documents') loadUnreadCount();
-                  }}
-                  className={`w-full flex items-center gap-3 ${isSidebarCollapsed ? 'justify-center px-3' : 'px-4'} py-3 rounded-xl transition-all ${
-                    currentView === item.id
-                      ? 'bg-pion-cyan text-white shadow-lg shadow-pion-cyan/30'
-                      : 'text-white/70 hover:bg-white/10 hover:text-white'
-                  }`}
-                  title={isSidebarCollapsed ? item.label : undefined}
-                >
-                  <Icon className="w-5 h-5 flex-shrink-0" />
-                  {!isSidebarCollapsed && (
-                    <>
-                      <span className="font-medium">{item.label}</span>
-                      {showBadge && (
-                        <span className="ml-auto px-2 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full min-w-[20px] text-center">
-                          {unreadDocsCount > 99 ? '99+' : unreadDocsCount}
-                        </span>
-                      )}
-                    </>
+                <div key={item.id}>
+                  <button
+                    onClick={() => {
+                      if (hasSubItems && !isSidebarCollapsed) {
+                        setExpandedMenus(prev => prev.includes(item.id) ? prev.filter(id => id !== item.id) : [...prev, item.id]);
+                      }
+                      onNavigate(item.id);
+                      if (item.id === 'documents') loadUnreadCount();
+                    }}
+                    className={`w-full flex items-center gap-3 ${isSidebarCollapsed ? 'justify-center px-3' : 'px-4'} py-3 rounded-xl transition-all ${
+                      isActive
+                        ? 'bg-pion-cyan text-white shadow-lg shadow-pion-cyan/30'
+                        : 'text-white/70 hover:bg-white/10 hover:text-white'
+                    }`}
+                    title={isSidebarCollapsed ? item.label : undefined}
+                  >
+                    <Icon className="w-5 h-5 flex-shrink-0" />
+                    {!isSidebarCollapsed && (
+                      <>
+                        <span className="font-medium">{item.label}</span>
+                        {showBadge && (
+                          <span className="ml-auto px-2 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full min-w-[20px] text-center">
+                            {unreadDocsCount > 99 ? '99+' : unreadDocsCount}
+                          </span>
+                        )}
+                        {hasSubItems && (
+                          <ChevronDown className={`w-4 h-4 ml-auto transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                        )}
+                      </>
+                    )}
+                    {isSidebarCollapsed && showBadge && (
+                      <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                    )}
+                  </button>
+                  {hasSubItems && isExpanded && !isSidebarCollapsed && (
+                    <div className="ml-4 mt-1 space-y-1 border-l border-white/20 pl-3">
+                      {item.subItems!.map(sub => {
+                        const SubIcon = sub.icon;
+                        return (
+                          <button
+                            key={sub.id}
+                            onClick={() => onNavigate(sub.id)}
+                            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all ${
+                              currentView === sub.id
+                                ? 'bg-white/20 text-white font-medium'
+                                : 'text-white/60 hover:bg-white/10 hover:text-white'
+                            }`}
+                          >
+                            <SubIcon className="w-4 h-4 flex-shrink-0" />
+                            <span>{sub.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
                   )}
-                  {isSidebarCollapsed && showBadge && (
-                    <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                  )}
-                </button>
+                </div>
               );
             })}
           </nav>

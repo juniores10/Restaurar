@@ -22,6 +22,7 @@ import { GateValidation } from './GateValidation';
 import { Portaria } from './Portaria';
 import { AbsenteeismDashboard } from './absenteeism';
 import { FactoryMaintenance } from './maintenance/FactoryMaintenance';
+import { PreventiveSchedule } from './maintenance/PreventiveSchedule';
 import { FreightManagement } from './logistics';
 import { TeamProductivityManagement } from './team-productivity/TeamProductivityManagement';
 import { EmployeeNotificationPanel } from './EmployeeNotificationPanel';
@@ -81,6 +82,8 @@ export function MainApp() {
         return canManageSystem() ? <AbsenteeismDashboard /> : <EmployeeDashboard />;
       case 'factory-maintenance':
         return <FactoryMaintenance />;
+      case 'preventive-schedule':
+        return <PreventiveSchedule />;
       case 'logistics':
         return canManageSystem() ? <FreightManagement /> : <EmployeeDashboard />;
       case 'portaria':
