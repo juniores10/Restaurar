@@ -669,7 +669,7 @@ export function MaintenanceCadastro() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Valor da Hora Equipamento (R$)</label>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Custo Estimado por Hora (R$)</label>
                       <input
                         type="number"
                         min={0}

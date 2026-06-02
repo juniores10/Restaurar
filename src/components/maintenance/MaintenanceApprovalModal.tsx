@@ -316,38 +316,6 @@ export function MaintenanceApprovalModal({ notification, approverName, onClose, 
                   />
                 </div>
 
-                <div>
-                  <label className="flex items-center gap-1.5 text-xs font-semibold text-gray-700 mb-1.5">
-                    <Clock className="w-3.5 h-3.5 text-teal-500" />
-                    Downtime Estimado (horas)
-                  </label>
-                  <input
-                    type="number"
-                    min={0}
-                    step={0.5}
-                    value={serviceForm.estimated_downtime_hours}
-                    onChange={e => sf('estimated_downtime_hours', e.target.value)}
-                    placeholder="Ex: 4"
-                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div>
-                  <label className="flex items-center gap-1.5 text-xs font-semibold text-gray-700 mb-1.5">
-                    <DollarSign className="w-3.5 h-3.5 text-teal-500" />
-                    Custo Estimado (R$)
-                  </label>
-                  <input
-                    type="number"
-                    min={0}
-                    step={0.01}
-                    value={serviceForm.estimated_cost}
-                    onChange={e => sf('estimated_cost', e.target.value)}
-                    placeholder="0,00"
-                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                  />
-                </div>
-
                 <div className="sm:col-span-2">
                   <label className="flex items-center gap-1.5 text-xs font-semibold text-gray-700 mb-1.5">
                     <Package className="w-3.5 h-3.5 text-teal-500" />
