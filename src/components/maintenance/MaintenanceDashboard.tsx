@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, LineChart, Line } from 'recharts';
-import { AlertTriangle, Clock, DollarSign, CheckCircle2, Wrench, TrendingDown } from 'lucide-react';
+import { AlertTriangle, Clock, DollarSign, CheckCircle2, Wrench, TrendingDown, TrendingUp, ShieldAlert } from 'lucide-react';
 import type { MaintenanceOrder } from '../../types/maintenance';
 
 interface Props {
@@ -54,6 +54,19 @@ export function MaintenanceDashboard({ orders }: Props) {
     const critical = orders.filter(o => o.priority === 'Crítica' && o.status !== 'Concluído' && o.status !== 'Cancelado').length;
 
     return { total, open, inProgress, completed, completionRate, avgResolutionHours, totalCost, totalDowntime, critical };
+  }, [orders]);
+
+  const equipmentRanking = useMemo(() => {
+    const counts: Record<string, number> = {};
+    orders.forEach(o => {
+      if (o.equipment) counts[o.equipment] = (counts[o.equipment] || 0) + 1;
+    });
+    const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+    if (entries.length === 0) return { most: null, least: null };
+    return {
+      most: { name: entries[0][0], count: entries[0][1] },
+      least: { name: entries[entries.length - 1][0], count: entries[entries.length - 1][1] },
+    };
   }, [orders]);
 
   const statusData = useMemo(() => {
@@ -150,6 +163,38 @@ export function MaintenanceDashboard({ orders }: Props) {
           );
         })}
       </div>
+
+      {equipmentRanking.most && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="relative overflow-hidden bg-white rounded-2xl border border-red-100 p-4 shadow-sm">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-red-500 to-orange-500 opacity-10 rounded-bl-[3rem]" />
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center flex-shrink-0">
+                <TrendingUp className="w-5 h-5 text-white" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs text-gray-500 font-medium">Maquina com Mais Defeitos</p>
+                <p className="text-sm font-bold text-gray-900 truncate">{equipmentRanking.most.name}</p>
+                <p className="text-xs text-red-600 font-semibold">{equipmentRanking.most.count} chamado{equipmentRanking.most.count !== 1 ? 's' : ''}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="relative overflow-hidden bg-white rounded-2xl border border-emerald-100 p-4 shadow-sm">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-emerald-500 to-teal-500 opacity-10 rounded-bl-[3rem]" />
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center flex-shrink-0">
+                <ShieldAlert className="w-5 h-5 text-white" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs text-gray-500 font-medium">Maquina com Menos Defeitos</p>
+                <p className="text-sm font-bold text-gray-900 truncate">{equipmentRanking.least!.name}</p>
+                <p className="text-xs text-emerald-600 font-semibold">{equipmentRanking.least!.count} chamado{equipmentRanking.least!.count !== 1 ? 's' : ''}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
