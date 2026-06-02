@@ -21,7 +21,7 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
   const [unreadDocsCount, setUnreadDocsCount] = useState(0);
   const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
   const [unreadEmployeeNotificationsCount, setUnreadEmployeeNotificationsCount] = useState(0);
-  const [expandedMenus, setExpandedMenus] = useState<string[]>(['factory-maintenance', 'logistics', 'data-management']);
+  const [expandedMenus, setExpandedMenus] = useState<string[]>([]);
 
   useEffect(() => {
     if (employeeProfile && !canManageSystem()) {
@@ -380,17 +380,18 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
                   <button
                     onClick={() => {
                       if (hasSubItems && !isSidebarCollapsed) {
-                        if (!expandedMenus.includes(item.id)) {
-                          setExpandedMenus(prev => [...prev, item.id]);
-                        }
+                        setExpandedMenus(prev => prev.includes(item.id) ? prev.filter(id => id !== item.id) : [...prev, item.id]);
+                      } else {
+                        onNavigate(item.id);
                       }
-                      onNavigate(item.id);
                       if (item.id === 'documents') loadUnreadCount();
                     }}
                     className={`w-full flex items-center gap-2.5 ${isSidebarCollapsed ? 'justify-center px-2' : 'px-3'} py-2 rounded-lg transition-all text-[13px] ${
-                      isActive
+                      isActive && !hasSubItems
                         ? 'bg-sky-600 text-white font-medium shadow-sm shadow-sky-600/30'
-                        : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
+                        : isActive && hasSubItems
+                          ? 'text-white bg-slate-800'
+                          : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
                     }`}
                     title={isSidebarCollapsed ? item.label : undefined}
                   >
@@ -404,7 +405,7 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
                           </span>
                         )}
                         {hasSubItems && (
-                          <ChevronDown className={`w-3.5 h-3.5 ml-auto transition-transform duration-200 ${(isExpanded || isActive) ? 'rotate-180' : ''}`} />
+                          <ChevronDown className={`w-3.5 h-3.5 ml-auto transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
                         )}
                       </>
                     )}
@@ -412,7 +413,7 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
                       <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
                     )}
                   </button>
-                  {hasSubItems && (isExpanded || isActive) && !isSidebarCollapsed && (
+                  {hasSubItems && isExpanded && !isSidebarCollapsed && (
                     <div className="mt-0.5 ml-3 space-y-0.5 border-l border-slate-700 pl-2.5">
                       {item.subItems!.map(sub => {
                         const SubIcon = sub.icon;
