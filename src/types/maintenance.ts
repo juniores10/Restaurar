@@ -1,8 +1,8 @@
 export type FaultType = string;
 
-export type MaintenanceType = 'Corretiva' | 'Preventiva';
+export type MaintenanceType = 'Corretiva' | 'Preventiva' | 'Preditiva' | 'Predial';
 
-export const MAINTENANCE_TYPES: MaintenanceType[] = ['Corretiva', 'Preventiva'];
+export const MAINTENANCE_TYPES: MaintenanceType[] = ['Corretiva', 'Preventiva', 'Preditiva', 'Predial'];
 
 export type ProblemOrigin =
   | 'Operação (erro humano/procedimento)'

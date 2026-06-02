@@ -186,23 +186,28 @@ export function MaintenanceOrderForm({ order, onClose, onSaved }: Props) {
 
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">Tipo de Manutencao *</label>
-            <div className="flex gap-3">
-              {MAINTENANCE_TYPES.map(mt => (
-                <button
-                  key={mt}
-                  type="button"
-                  onClick={() => set('maintenance_type', mt)}
-                  className={`flex-1 py-2.5 rounded-xl font-medium text-sm border-2 transition-all ${
-                    form.maintenance_type === mt
-                      ? mt === 'Corretiva'
-                        ? 'bg-rose-50 border-rose-500 text-rose-700'
-                        : 'bg-teal-50 border-teal-500 text-teal-700'
-                      : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300'
-                  }`}
-                >
-                  {mt}
-                </button>
-              ))}
+            <div className="grid grid-cols-2 gap-3">
+              {MAINTENANCE_TYPES.map(mt => {
+                const activeStyle =
+                  mt === 'Corretiva'  ? 'bg-rose-50 border-rose-500 text-rose-700' :
+                  mt === 'Preventiva' ? 'bg-teal-50 border-teal-500 text-teal-700' :
+                  mt === 'Preditiva'  ? 'bg-blue-50 border-blue-500 text-blue-700' :
+                                       'bg-amber-50 border-amber-500 text-amber-700';
+                return (
+                  <button
+                    key={mt}
+                    type="button"
+                    onClick={() => set('maintenance_type', mt)}
+                    className={`py-2.5 rounded-xl font-medium text-sm border-2 transition-all ${
+                      form.maintenance_type === mt
+                        ? activeStyle
+                        : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300'
+                    }`}
+                  >
+                    {mt}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
