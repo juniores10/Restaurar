@@ -36,7 +36,7 @@ export function MaintenanceDashboard({ orders }: Props) {
   useEffect(() => {
     supabase
       .from('maintenance_equipment')
-      .select('id, name, available_from, available_to, status')
+      .select('id, name, sector, available_from, available_to, status')
       .eq('status', 0)
       .then(({ data }) => setEquipmentList(data || []));
   }, []);
@@ -73,6 +73,42 @@ export function MaintenanceDashboard({ orders }: Props) {
   }, [availabilityChartData]);
 
   const percentTarget = 85;
+
+  const sectorOrdersData = useMemo(() => {
+    const counts: Record<string, number> = {};
+    orders.forEach(o => {
+      if (o.location) {
+        counts[o.location] = (counts[o.location] || 0) + 1;
+      }
+    });
+    return Object.entries(counts)
+      .map(([name, value]) => ({ name: name.length > 18 ? name.substring(0, 18) + '...' : name, fullName: name, value }))
+      .sort((a, b) => b.value - a.value);
+  }, [orders]);
+
+  const sectorAvailabilityData = useMemo(() => {
+    const sectors: Record<string, { disponivel: number; indisponivel: number }> = {};
+    equipmentList.forEach(eq => {
+      if (!eq.sector || !eq.available_from || !eq.available_to) return;
+      const [hS, mS] = eq.available_from.split(':').map(Number);
+      const [hE, mE] = eq.available_to.split(':').map(Number);
+      const availableHours = Math.max(0, ((hE * 60 + mE) - (hS * 60 + mS)) / 60);
+      const downtimeHours = orders
+        .filter(o => o.equipment === eq.name)
+        .reduce((sum, o) => sum + o.actual_downtime_hours, 0);
+      if (!sectors[eq.sector]) sectors[eq.sector] = { disponivel: 0, indisponivel: 0 };
+      sectors[eq.sector].disponivel += availableHours;
+      sectors[eq.sector].indisponivel += downtimeHours;
+    });
+    return Object.entries(sectors)
+      .map(([name, data]) => ({
+        name: name.length > 18 ? name.substring(0, 18) + '...' : name,
+        fullName: name,
+        disponivel: parseFloat(data.disponivel.toFixed(1)),
+        indisponivel: parseFloat(data.indisponivel.toFixed(1)),
+      }))
+      .sort((a, b) => b.disponivel - a.disponivel);
+  }, [equipmentList, orders]);
 
   const stats = useMemo(() => {
     const total = orders.length;
@@ -275,6 +311,46 @@ export function MaintenanceDashboard({ orders }: Props) {
               </ComposedChart>
             </ResponsiveContainer>
           </div>
+        </div>
+      )}
+
+      {(sectorOrdersData.length > 0 || sectorAvailabilityData.length > 0) && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {sectorOrdersData.length > 0 && (
+            <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+              <h3 className="text-sm font-bold text-gray-700 mb-1">Ordens de Servico por Setor</h3>
+              <p className="text-xs text-gray-400 mb-4">Setores com mais chamados abertos</p>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={sectorOrdersData} margin={{ top: 10, right: 10, bottom: 40, left: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                  <XAxis dataKey="name" tick={{ fontSize: 10, angle: -35, textAnchor: 'end' }} height={60} interval={0} />
+                  <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
+                  <Tooltip formatter={(value: any) => [value, 'Chamados']} labelFormatter={(label: any, payload: any) => payload?.[0]?.payload?.fullName || label} />
+                  <Bar dataKey="value" name="Chamados" fill="#0d9488" radius={[6, 6, 0, 0]} barSize={28}>
+                    {sectorOrdersData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+
+          {sectorAvailabilityData.length > 0 && (
+            <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+              <h3 className="text-sm font-bold text-gray-700 mb-1">Horas por Setor (Disponivel vs Indisponivel)</h3>
+              <p className="text-xs text-gray-400 mb-4">Total de horas disponiveis e indisponiveis por setor</p>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={sectorAvailabilityData} margin={{ top: 10, right: 10, bottom: 40, left: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                  <XAxis dataKey="name" tick={{ fontSize: 10, angle: -35, textAnchor: 'end' }} height={60} interval={0} />
+                  <YAxis tick={{ fontSize: 11 }} unit="h" />
+                  <Tooltip formatter={(value: any, name: string) => [`${value}h`, name === 'disponivel' ? 'Horas Disponiveis' : 'Horas Indisponiveis']} labelFormatter={(label: any, payload: any) => payload?.[0]?.payload?.fullName || label} />
+                  <Legend formatter={(value: string) => value === 'disponivel' ? 'Horas Disponiveis' : 'Horas Indisponiveis'} />
+                  <Bar dataKey="disponivel" fill="#10b981" radius={[6, 6, 0, 0]} barSize={24} />
+                  <Bar dataKey="indisponivel" fill="#ef4444" radius={[6, 6, 0, 0]} barSize={24} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
         </div>
       )}
 
