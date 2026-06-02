@@ -318,35 +318,6 @@ export function MaintenanceOrderForm({ order, onClose, onSaved }: Props) {
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">Downtime Real (horas)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.25"
-                    value={form.actual_downtime_hours ?? 0}
-                    onChange={e => set('actual_downtime_hours', parseFloat(e.target.value) || 0)}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                  />
-                  {form.started_at && form.completed_at && (
-                    <p className="text-xs text-teal-600 mt-1">
-                      Calculado automaticamente: {calcDowntime(form.started_at, form.completed_at)}h
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">Custo Real (R$)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={form.actual_cost ?? 0}
-                    onChange={e => set('actual_cost', parseFloat(e.target.value) || 0)}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                  />
-                </div>
-              </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">Notas de Resolucao</label>
                 <textarea
