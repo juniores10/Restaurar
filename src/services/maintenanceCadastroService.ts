@@ -51,6 +51,7 @@ export interface MaintenanceTechnician {
   id: string;
   name: string;
   specialty_id: string | null;
+  hourly_rate: number;
   status: number;
   created_at: string;
   updated_at: string;
@@ -211,13 +212,13 @@ export const maintenanceCadastroService = {
     return data as MaintenanceTechnician[];
   },
 
-  async createTechnician(payload: { name: string; specialty_id: string | null }) {
+  async createTechnician(payload: { name: string; specialty_id: string | null; hourly_rate?: number }) {
     const { data, error } = await supabase.from('maintenance_technicians').insert(payload).select().single();
     if (error) throw error;
     return data;
   },
 
-  async updateTechnician(id: string, payload: Partial<{ name: string; specialty_id: string | null; status: number }>) {
+  async updateTechnician(id: string, payload: Partial<{ name: string; specialty_id: string | null; hourly_rate: number; status: number }>) {
     const { data, error } = await supabase.from('maintenance_technicians').update({ ...payload, updated_at: new Date().toISOString() }).eq('id', id).select().single();
     if (error) throw error;
     return data;

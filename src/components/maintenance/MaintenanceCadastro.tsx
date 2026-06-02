@@ -41,7 +41,7 @@ const TABS: TabConfig[] = [
 const emptyEquipmentForm = { name: '', tag_code: '', location_id: '', sector: '', manufacturer: '', serial_number: '', model: '', installation_date: '', hourly_cost: 0, purchase_value: 0, manual_url: '', available_from: '', available_to: '' };
 const emptySimpleForm = { name: '', description: '' };
 const emptyMaterialForm = { name: '', unit: 'un', equipment_id: '', warehouse_code: '', description: '', unit_price: 0 };
-const emptyTechnicianForm = { name: '', specialty_id: '' };
+const emptyTechnicianForm = { name: '', specialty_id: '', hourly_rate: '0' };
 
 export function MaintenanceCadastro() {
   const [activeTab, setActiveTab] = useState<TabId>('equipment');
@@ -182,7 +182,7 @@ export function MaintenanceCadastro() {
       setSelectedEquipmentIds(item.equipment_ids || (item.equipment_id ? [item.equipment_id] : []));
     } else if (activeTab === 'technicians') {
       const emp = employees.find(e => e.name === item.name);
-      setFormData({ name: item.name, specialty_id: item.specialty_id || '', role_display: emp?.role_name || '' });
+      setFormData({ name: item.name, specialty_id: item.specialty_id || '', hourly_rate: String(item.hourly_rate || 0), role_display: emp?.role_name || '' });
     } else {
       setFormData({ name: item.name, description: item.description || '' });
     }
@@ -255,7 +255,7 @@ export function MaintenanceCadastro() {
         }
         setMaterials(await maintenanceCadastroService.getMaterials());
       } else if (activeTab === 'technicians') {
-        const payload = { name: formData.name.trim(), specialty_id: formData.specialty_id || null };
+        const payload = { name: formData.name.trim(), specialty_id: formData.specialty_id || null, hourly_rate: parseFloat(formData.hourly_rate) || 0 };
         if (editingId) {
           await maintenanceCadastroService.updateTechnician(editingId, payload);
         } else {
@@ -406,6 +406,7 @@ export function MaintenanceCadastro() {
       const emp = employees.find(e => e.name === item.name);
       if (emp?.role_name) parts.push(emp.role_name);
       if (item.maintenance_specialties?.name) parts.push(item.maintenance_specialties.name);
+      if (item.hourly_rate > 0) parts.push(`R$ ${Number(item.hourly_rate).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}/h`);
       return parts.join(' • ') || 'Sem especialidade';
     }
     return item.description || '—';
@@ -1053,6 +1054,18 @@ export function MaintenanceCadastro() {
                           <option key={s.id} value={s.id}>{s.name}</option>
                         ))}
                       </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Valor Hora (R$)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={formData.hourly_rate || ''}
+                        onChange={e => setFormData(p => ({ ...p, hourly_rate: e.target.value }))}
+                        placeholder="0,00"
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                      />
                     </div>
                   </div>
                 </div>
