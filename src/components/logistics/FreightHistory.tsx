@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Filter, Download, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Filter, Download, Calendar, ChevronLeft, ChevronRight, Pencil, X, Save } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
 const STATUS_OPTIONS = [
@@ -20,6 +20,9 @@ export function FreightHistory() {
   const [dateTo, setDateTo] = useState('');
   const [page, setPage] = useState(0);
   const [total, setTotal] = useState(0);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<any>(null);
+  const [saving, setSaving] = useState(false);
   const pageSize = 25;
 
   useEffect(() => {
@@ -59,15 +62,54 @@ export function FreightHistory() {
     loadRecords();
   };
 
+  const handleEdit = (record: any) => {
+    setEditingId(record.id);
+    setEditForm({ ...record });
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingId || !editForm) return;
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from('freight_records')
+        .update({
+          shipment_date: editForm.shipment_date,
+          nf_number: editForm.nf_number,
+          nature: editForm.nature,
+          client_name: editForm.client_name,
+          client_cnpj: editForm.client_cnpj,
+          destination_city: editForm.destination_city,
+          destination_state: editForm.destination_state,
+          carrier_name: editForm.carrier_name,
+          nf_value: parseFloat(editForm.nf_value) || 0,
+          freight_value: parseFloat(editForm.freight_value) || 0,
+          quote_value: parseFloat(editForm.quote_value) || 0,
+          status: editForm.status,
+          observations: editForm.observations,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', editingId);
+      if (error) throw error;
+      setEditingId(null);
+      setEditForm(null);
+      loadRecords();
+    } catch (error) {
+      console.error('Error updating record:', error);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const exportCSV = () => {
     if (records.length === 0) return;
-    const headers = ['Data', 'NF', 'Cliente', 'CNPJ', 'Cidade', 'UF', 'CEP', 'Natureza', 'Transportadora', 'Volume', 'Peso', 'Valor NF', 'Cotacao', 'Valor Frete', '% Frete', 'CT-e', 'Fatura', 'Status', 'SLA', 'Dias Reais', 'Atraso'];
+    const headers = ['Data', 'NF', 'Cliente', 'CNPJ', 'Cidade', 'UF', 'CEP', 'Natureza', 'Transportadora', 'Volume', 'Peso', 'Valor NF', 'Cotacao', 'Valor Frete', '% Frete', 'CT-e', 'Fatura', 'Status', 'Dias Uteis', 'Observacoes'];
     const rows = records.map(r => [
       r.shipment_date, r.nf_number, r.client_name, r.client_cnpj,
       r.destination_city, r.destination_state, r.destination_cep, r.nature,
       r.carrier_name, r.volume, r.weight, r.nf_value, r.quote_value,
-      r.freight_value, r.freight_percentage, r.cte_number, r.invoice_number,
-      r.status, r.sla_days, r.actual_days, r.delay_days,
+      r.freight_value, r.freight_vs_nf_pct ? (r.freight_vs_nf_pct * 100).toFixed(2) : '0', r.cte_number, r.invoice_number,
+      r.status, r.business_days, r.observations,
     ]);
     const csv = [headers.join(';'), ...rows.map(r => r.join(';'))].join('\n');
     const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
@@ -184,6 +226,7 @@ export function FreightHistory() {
                     <th className="text-center py-2 px-2 font-medium text-slate-600 hidden md:table-cell">%</th>
                     <th className="text-left py-2 px-2 font-medium text-slate-600 hidden lg:table-cell">CT-e</th>
                     <th className="text-center py-2 px-2 font-medium text-slate-600">Status</th>
+                    <th className="text-center py-2 px-2 font-medium text-slate-600 w-14">Acao</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -207,13 +250,18 @@ export function FreightHistory() {
                         {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(record.freight_value || 0)}
                       </td>
                       <td className="py-2 px-2 text-center text-slate-600 hidden md:table-cell">
-                        {record.freight_percentage ? `${record.freight_percentage}%` : '-'}
+                        {record.freight_vs_nf_pct ? `${(Number(record.freight_vs_nf_pct) * 100).toFixed(1)}%` : '-'}
                       </td>
                       <td className="py-2 px-2 text-slate-600 hidden lg:table-cell">{record.cte_number || '-'}</td>
                       <td className="py-2 px-2 text-center">
                         <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium ${getStatusColor(record.status)}`}>
                           {getStatusLabel(record.status)}
                         </span>
+                      </td>
+                      <td className="py-2 px-2 text-center">
+                        <button onClick={() => handleEdit(record)} className="p-1 hover:bg-teal-50 rounded text-teal-600 hover:text-teal-700">
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -248,6 +296,70 @@ export function FreightHistory() {
           </>
         )}
       </div>
+
+      {editingId && editForm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-4 border-b border-slate-100">
+              <h3 className="text-sm font-semibold text-slate-800">Editar Registro</h3>
+              <button onClick={() => { setEditingId(null); setEditForm(null); }} className="p-1 hover:bg-slate-100 rounded">
+                <X className="w-4 h-4 text-slate-500" />
+              </button>
+            </div>
+            <div className="p-4 space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Cliente</label>
+                  <input type="text" value={editForm.client_name || ''} onChange={(e) => setEditForm({ ...editForm, client_name: e.target.value })} className="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-sm" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">CNPJ</label>
+                  <input type="text" value={editForm.client_cnpj || ''} onChange={(e) => setEditForm({ ...editForm, client_cnpj: e.target.value })} className="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-sm" />
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Valor NF</label>
+                  <input type="number" step="0.01" value={editForm.nf_value || ''} onChange={(e) => setEditForm({ ...editForm, nf_value: e.target.value })} className="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-sm" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Valor Frete</label>
+                  <input type="number" step="0.01" value={editForm.freight_value || ''} onChange={(e) => setEditForm({ ...editForm, freight_value: e.target.value })} className="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-sm" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Cotacao</label>
+                  <input type="number" step="0.01" value={editForm.quote_value || ''} onChange={(e) => setEditForm({ ...editForm, quote_value: e.target.value })} className="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-sm" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Transportadora</label>
+                  <input type="text" value={editForm.carrier_name || ''} onChange={(e) => setEditForm({ ...editForm, carrier_name: e.target.value })} className="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-sm" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Status</label>
+                  <select value={editForm.status || ''} onChange={(e) => setEditForm({ ...editForm, status: e.target.value })} className="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-sm">
+                    {STATUS_OPTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-600 mb-1">Observacoes</label>
+                <textarea value={editForm.observations || ''} onChange={(e) => setEditForm({ ...editForm, observations: e.target.value })} rows={2} className="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-sm resize-none" />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 p-4 border-t border-slate-100">
+              <button onClick={() => { setEditingId(null); setEditForm(null); }} className="px-3 py-1.5 border border-slate-200 rounded-lg text-sm text-slate-600 hover:bg-slate-50">
+                Cancelar
+              </button>
+              <button onClick={handleSaveEdit} disabled={saving} className="flex items-center gap-1.5 px-3 py-1.5 bg-teal-600 text-white rounded-lg text-sm font-medium hover:bg-teal-700 disabled:opacity-50">
+                <Save className="w-3.5 h-3.5" />
+                {saving ? 'Salvando...' : 'Salvar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

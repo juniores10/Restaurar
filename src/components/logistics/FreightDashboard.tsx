@@ -30,7 +30,7 @@ export function FreightDashboard({ onNavigate }: FreightDashboardProps) {
   });
   const [recentRecords, setRecentRecords] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [period, setPeriod] = useState('30');
+  const [period, setPeriod] = useState('180');
 
   useEffect(() => {
     loadDashboard();
@@ -137,6 +137,8 @@ export function FreightDashboard({ onNavigate }: FreightDashboardProps) {
           <option value="30">Ultimos 30 dias</option>
           <option value="60">Ultimos 60 dias</option>
           <option value="90">Ultimos 90 dias</option>
+          <option value="180">Ultimos 6 meses</option>
+          <option value="365">Ultimo ano</option>
         </select>
       </div>
 
