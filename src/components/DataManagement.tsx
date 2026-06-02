@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, CreditCard as Edit2, Trash2, Save, X, Building, Briefcase, Circle, GitBranch, Wrench, MapPin, Clock, Calendar, Building2, Tag, Target, Users, Layers } from 'lucide-react';
+import { Plus, CreditCard as Edit2, Trash2, Save, X, Building, Briefcase, Circle, GitBranch, Wrench, MapPin, Clock, Calendar, Building2, Tag, Target, Users, Layers, Truck } from 'lucide-react';
 import { dataTypeService } from '../services/dataTypeService';
 import { locationService, LocationType } from '../services/locationService';
 import { supabase } from '../lib/supabase';
@@ -10,8 +10,9 @@ import GoalsProductivityManagement from './GoalsProductivityManagement';
 import { TeamManagement } from './TeamManagement';
 import { MaintenanceCadastro } from './maintenance/MaintenanceCadastro';
 import PerformanceAdherenceManagement from './PerformanceAdherenceManagement';
+import { SuppliersManagement } from './SuppliersManagement';
 
-type TabType = 'branches' | 'workplaces' | 'divisions' | 'functions' | 'status' | 'shift_times' | 'day_options' | 'productivity_categories' | 'goals_productivity' | 'company_logo' | 'teams' | 'maintenance_cadastro' | 'performance_adherence';
+type TabType = 'branches' | 'workplaces' | 'divisions' | 'functions' | 'status' | 'shift_times' | 'day_options' | 'productivity_categories' | 'goals_productivity' | 'company_logo' | 'teams' | 'maintenance_cadastro' | 'performance_adherence' | 'suppliers';
 
 type DivisionSubTab = 'areas' | 'departments' | 'sectors' | 'positions';
 
@@ -94,6 +95,7 @@ export function DataManagement() {
     { id: 'company_logo', label: 'Logo da Empresa', singular: 'Logo', icon: Building2, typeCode: 0, useCustomTable: 'company_logo' },
     { id: 'maintenance_cadastro', label: 'Manutencao Fabrica', singular: 'Manutencao', icon: Wrench, typeCode: 0, useCustomTable: 'maintenance_cadastro' },
     { id: 'performance_adherence', label: 'Performance Aderencia', singular: 'Perfil', icon: Target, typeCode: 0, useCustomTable: 'performance_adherence' },
+    { id: 'suppliers', label: 'Fornecedores', singular: 'Fornecedor', icon: Truck, typeCode: 0, useCustomTable: 'suppliers' },
   ];
 
   const currentTab = tabs.find(t => t.id === activeTab)!;
@@ -648,6 +650,8 @@ export function DataManagement() {
             <MaintenanceCadastro />
           ) : activeTab === 'performance_adherence' ? (
             <PerformanceAdherenceManagement />
+          ) : activeTab === 'suppliers' ? (
+            <SuppliersManagement />
           ) : (
             <>
               {isDivisionsTab && (
