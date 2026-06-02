@@ -23,6 +23,7 @@ import { Portaria } from './Portaria';
 import { AbsenteeismDashboard } from './absenteeism';
 import { FactoryMaintenance } from './maintenance/FactoryMaintenance';
 import { PreventiveSchedule } from './maintenance/PreventiveSchedule';
+import { MaintenanceCostReport } from './maintenance/MaintenanceCostReport';
 import { FreightManagement } from './logistics';
 import { ExpeditionManagement } from './logistics/ExpeditionManagement';
 import { TeamProductivityManagement } from './team-productivity/TeamProductivityManagement';
@@ -85,6 +86,8 @@ export function MainApp() {
         return <FactoryMaintenance />;
       case 'preventive-schedule':
         return <PreventiveSchedule />;
+      case 'maintenance-reports':
+        return <MaintenanceCostReport />;
       case 'logistics':
       case 'freight-management':
         return canManageSystem() ? <FreightManagement /> : <EmployeeDashboard />;

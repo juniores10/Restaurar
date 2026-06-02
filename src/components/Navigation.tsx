@@ -1,4 +1,4 @@
-import { Building2, Users, TrendingUp, MessageSquare, Bell, FileText, LogOut, Menu, X, Database, User, Home, CalendarDays, CalendarCheck, Clock, ChevronLeft, ChevronRight, ChevronDown, DollarSign, Shield, ShieldCheck, UserX, Wrench, Activity, Truck, Calendar, Package, CreditCard } from 'lucide-react';
+import { Building2, Users, TrendingUp, MessageSquare, Bell, FileText, LogOut, Menu, X, Database, User, Home, CalendarDays, CalendarCheck, Clock, ChevronLeft, ChevronRight, ChevronDown, DollarSign, Shield, ShieldCheck, UserX, Wrench, Activity, Truck, Calendar, Package, CreditCard, BarChart3 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { documentService } from '../services/documentService';
@@ -101,6 +101,7 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
     { id: 'documents', label: 'Documentos', icon: FileText },
     { id: 'factory-maintenance', label: 'OS Manutencao', icon: Wrench, subItems: [
       { id: 'preventive-schedule', label: 'Agenda de Preventivas', icon: Calendar },
+      { id: 'maintenance-reports', label: 'Relatorios', icon: BarChart3 },
     ] },
     { id: 'logistics', label: 'Logistica', icon: Truck, subItems: [
       { id: 'expedition', label: 'Expedicao', icon: Package },
@@ -120,6 +121,7 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
     { id: 'documents', label: 'Documentos', icon: FileText },
     { id: 'factory-maintenance', label: 'OS Manutencao', icon: Wrench, subItems: [
       { id: 'preventive-schedule', label: 'Agenda de Preventivas', icon: Calendar },
+      { id: 'maintenance-reports', label: 'Relatorios', icon: BarChart3 },
     ] },
   ];
 
@@ -132,6 +134,7 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
     { id: 'documents', label: 'Documentos', icon: FileText },
     { id: 'factory-maintenance', label: 'OS Manutencao', icon: Wrench, subItems: [
       { id: 'preventive-schedule', label: 'Agenda de Preventivas', icon: Calendar },
+      { id: 'maintenance-reports', label: 'Relatorios', icon: BarChart3 },
     ] },
   ];
 
