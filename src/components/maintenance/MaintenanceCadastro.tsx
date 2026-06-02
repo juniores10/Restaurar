@@ -38,7 +38,7 @@ const TABS: TabConfig[] = [
   { id: 'occurrences', label: 'Tipo de Falha', icon: AlertCircle, description: 'Tipos de falha e ocorrencias' },
 ];
 
-const emptyEquipmentForm = { name: '', tag_code: '', location_id: '', sector: '', manufacturer: '', serial_number: '', model: '', installation_date: '', hourly_cost: 0, manual_url: '', available_from: '', available_to: '' };
+const emptyEquipmentForm = { name: '', tag_code: '', location_id: '', sector: '', manufacturer: '', serial_number: '', model: '', installation_date: '', hourly_cost: 0, purchase_value: 0, manual_url: '', available_from: '', available_to: '' };
 const emptySimpleForm = { name: '', description: '' };
 const emptyMaterialForm = { name: '', unit: 'un', equipment_id: '', warehouse_code: '', description: '' };
 const emptyTechnicianForm = { name: '', specialty_id: '' };
@@ -166,6 +166,7 @@ export function MaintenanceCadastro() {
         manual_url: item.manual_url || '',
         available_from: item.available_from || '',
         available_to: item.available_to || '',
+        purchase_value: item.purchase_value || 0,
       });
     } else if (activeTab === 'materials') {
       setFormData({
@@ -218,6 +219,7 @@ export function MaintenanceCadastro() {
           manual_url,
           available_from: formData.available_from || null,
           available_to: formData.available_to || null,
+          purchase_value: parseFloat(formData.purchase_value as any) || 0,
         };
         if (editingId) {
           await maintenanceCadastroService.updateEquipment(editingId, payload);
@@ -686,6 +688,20 @@ export function MaintenanceCadastro() {
                         step={0.01}
                         value={formData.hourly_cost ?? 0}
                         onChange={e => setFormData(p => ({ ...p, hourly_cost: parseFloat(e.target.value) || 0 }))}
+                        placeholder="0,00"
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-1 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Valor de Compra Estimado (R$)</label>
+                      <input
+                        type="number"
+                        min={0}
+                        step={0.01}
+                        value={formData.purchase_value ?? 0}
+                        onChange={e => setFormData(p => ({ ...p, purchase_value: parseFloat(e.target.value) || 0 }))}
                         placeholder="0,00"
                         className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                       />
