@@ -11,6 +11,7 @@ export interface MaintenanceEquipment {
   model: string;
   installation_date: string | null;
   hourly_cost: number;
+  manual_url: string;
   inactivated_at: string | null;
   inactivation_reason: string;
   status: number;
@@ -90,6 +91,7 @@ export const maintenanceCadastroService = {
     serial_number?: string;
     model?: string;
     installation_date?: string | null;
+    manual_url?: string;
   }) {
     const { data, error } = await supabase.from('maintenance_equipment').insert(payload).select().single();
     if (error) throw error;
@@ -105,6 +107,7 @@ export const maintenanceCadastroService = {
     serial_number: string;
     model: string;
     installation_date: string | null;
+    manual_url: string;
     inactivated_at: string | null;
     inactivation_reason: string;
     status: number;

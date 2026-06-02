@@ -38,7 +38,7 @@ const TABS: TabConfig[] = [
   { id: 'occurrences', label: 'Tipo de Falha', icon: AlertCircle, description: 'Tipos de falha e ocorrencias' },
 ];
 
-const emptyEquipmentForm = { name: '', tag_code: '', location_id: '', sector: '', manufacturer: '', serial_number: '', model: '', installation_date: '', hourly_cost: 0 };
+const emptyEquipmentForm = { name: '', tag_code: '', location_id: '', sector: '', manufacturer: '', serial_number: '', model: '', installation_date: '', hourly_cost: 0, manual_url: '' };
 const emptySimpleForm = { name: '', description: '' };
 const emptyMaterialForm = { name: '', unit: 'un', equipment_id: '', warehouse_code: '', description: '' };
 const emptyTechnicianForm = { name: '', specialty_id: '' };
@@ -59,6 +59,8 @@ export function MaintenanceCadastro() {
   const [locations, setLocations] = useState<MaintenanceLocation[]>([]);
   const [sectorList, setSectorList] = useState<{ id: string; description: string }[]>([]);
   const [employees, setEmployees] = useState<SimpleEmployee[]>([]);
+  const [manualFile, setManualFile] = useState<File | null>(null);
+  const [uploadingManual, setUploadingManual] = useState(false);
   const [inactivationModal, setInactivationModal] = useState<{ item: MaintenanceEquipment } | null>(null);
   const [inactivationReason, setInactivationReason] = useState('');
   const [matFilterEquipment, setMatFilterEquipment] = useState('');
@@ -129,6 +131,7 @@ export function MaintenanceCadastro() {
     setShowForm(false);
     setSelectedEquipmentIds([]);
     setEqDropdownOpen(false);
+    setManualFile(null);
     if (activeTab === 'equipment') setFormData(emptyEquipmentForm);
     else if (activeTab === 'materials') setFormData(emptyMaterialForm);
     else if (activeTab === 'technicians') setFormData(emptyTechnicianForm);
@@ -158,6 +161,7 @@ export function MaintenanceCadastro() {
         serial_number: item.serial_number || '',
         model: item.model || '',
         installation_date: item.installation_date || '',
+        manual_url: item.manual_url || '',
       });
     } else if (activeTab === 'materials') {
       setFormData({
@@ -185,6 +189,19 @@ export function MaintenanceCadastro() {
     setSaving(true);
     try {
       if (activeTab === 'equipment') {
+        let manual_url = formData.manual_url || '';
+        if (manualFile) {
+          setUploadingManual(true);
+          const ext = manualFile.name.split('.').pop();
+          const path = `${Date.now()}-${manualFile.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('equipment-manuals')
+            .upload(path, manualFile, { upsert: true, contentType: manualFile.type });
+          setUploadingManual(false);
+          if (uploadError) throw uploadError;
+          const { data: urlData } = supabase.storage.from('equipment-manuals').getPublicUrl(uploadData.path);
+          manual_url = urlData.publicUrl;
+        }
         const payload = {
           name: formData.name.trim(),
           tag_code: formData.tag_code || '',
@@ -194,6 +211,7 @@ export function MaintenanceCadastro() {
           serial_number: formData.serial_number || '',
           model: formData.model || '',
           installation_date: formData.installation_date || null,
+          manual_url,
         };
         if (editingId) {
           await maintenanceCadastroService.updateEquipment(editingId, payload);
@@ -628,13 +646,55 @@ export function MaintenanceCadastro() {
                       />
                     </div>
                   </div>
+                  <div className="flex flex-wrap gap-4">
+                    <div className="flex-1 min-w-[220px]">
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Manual da Maquina (PDF)</label>
+                      <div className="flex items-center gap-2">
+                        <label className="flex-1 flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-lg text-sm cursor-pointer hover:bg-gray-50 transition-colors">
+                          <FileText className="w-4 h-4 text-gray-400 shrink-0" />
+                          <span className="truncate text-gray-500">
+                            {manualFile ? manualFile.name : formData.manual_url ? 'Manual anexado' : 'Selecionar arquivo...'}
+                          </span>
+                          <input
+                            type="file"
+                            accept=".pdf,.doc,.docx"
+                            className="hidden"
+                            onChange={e => setManualFile(e.target.files?.[0] || null)}
+                          />
+                        </label>
+                        {(manualFile || formData.manual_url) && (
+                          <div className="flex items-center gap-1">
+                            {formData.manual_url && !manualFile && (
+                              <a
+                                href={formData.manual_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-1.5 text-teal-600 hover:bg-teal-50 rounded transition-colors"
+                                title="Visualizar manual"
+                              >
+                                <FileText className="w-4 h-4" />
+                              </a>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => { setManualFile(null); setFormData(p => ({ ...p, manual_url: '' })); }}
+                              className="p-1.5 text-red-500 hover:bg-red-50 rounded transition-colors"
+                              title="Remover manual"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                   <div className="flex items-center gap-3 pt-1">
                     <button
                       onClick={handleSave}
-                      disabled={saving}
+                      disabled={saving || uploadingManual}
                       className="flex items-center gap-1.5 px-3 py-2 bg-teal-600 text-white text-sm rounded-lg hover:bg-teal-700 disabled:opacity-50 transition-colors"
                     >
-                      {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                      {(saving || uploadingManual) ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                       {editingId ? 'Salvar' : 'Adicionar'}
                     </button>
                     <button
