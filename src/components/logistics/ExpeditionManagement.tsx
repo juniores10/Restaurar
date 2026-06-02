@@ -48,10 +48,21 @@ export function ExpeditionManagement() {
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [filterMonth, setFilterMonth] = useState('');
+  const [employees, setEmployees] = useState<{ id: string; name: string }[]>([]);
 
   useEffect(() => {
     loadRecords();
+    loadEmployees();
   }, [filterMonth]);
+
+  const loadEmployees = async () => {
+    const { data } = await supabase
+      .from('employees')
+      .select('id, name')
+      .in('status', [0, 1, 2, 3])
+      .order('name');
+    if (data) setEmployees(data);
+  };
 
   const loadRecords = async () => {
     setLoading(true);
@@ -487,12 +498,18 @@ export function ExpeditionManagement() {
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1">Expedido Por</label>
-                    <input
-                      type="text"
+                    <select
                       value={form.shipped_by}
                       onChange={e => setForm(prev => ({ ...prev, shipped_by: e.target.value }))}
                       className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
+                    >
+                      <option value="">Selecione um colaborador</option>
+                      {employees.map(emp => (
+                        <option key={emp.id} value={emp.name.toLowerCase().split(' ')[0]}>
+                          {emp.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
               </div>
