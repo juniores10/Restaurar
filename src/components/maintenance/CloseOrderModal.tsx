@@ -88,13 +88,33 @@ export function CloseOrderModal({ order, onClose, onSaved }: Props) {
   const photosFim = photos.filter(p => p.type === 'fim');
 
   const addPhotos = (files: FileList, type: 'inicio' | 'fim') => {
-    const newPhotos: ClosePhoto[] = Array.from(files).map(file => ({
-      file,
-      preview: URL.createObjectURL(file),
-      type,
-    }));
-    setPhotos(prev => [...prev, ...newPhotos]);
-    setErrors(prev => ({ ...prev, photos: '' }));
+    const duplicates: string[] = [];
+    const toAdd: ClosePhoto[] = [];
+
+    Array.from(files).forEach(file => {
+      const isDuplicate = photos.some(
+        p => p.file.name === file.name && p.file.size === file.size && p.file.lastModified === file.lastModified
+      );
+      if (isDuplicate) {
+        duplicates.push(file.name);
+      } else {
+        toAdd.push({ file, preview: URL.createObjectURL(file), type });
+      }
+    });
+
+    if (duplicates.length > 0) {
+      setErrors(prev => ({
+        ...prev,
+        photoDuplicate: `Foto(s) ja adicionada(s): ${duplicates.join(', ')}`,
+      }));
+    } else {
+      setErrors(prev => ({ ...prev, photoDuplicate: '' }));
+    }
+
+    if (toAdd.length > 0) {
+      setPhotos(prev => [...prev, ...toAdd]);
+      setErrors(prev => ({ ...prev, photos: '' }));
+    }
   };
 
   const removePhoto = (index: number) => {
@@ -581,6 +601,11 @@ export function CloseOrderModal({ order, onClose, onSaved }: Props) {
             {errors.photos && (
               <p className="flex items-center gap-1 text-[11px] text-red-500 mt-2">
                 <AlertCircle className="w-3 h-3" />{errors.photos}
+              </p>
+            )}
+            {errors.photoDuplicate && (
+              <p className="flex items-center gap-1 text-[11px] text-red-500 mt-1">
+                <AlertCircle className="w-3 h-3" />{errors.photoDuplicate}
               </p>
             )}
 
