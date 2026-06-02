@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
-import { X, CheckCircle, XCircle, AlertTriangle, Loader2, ChevronRight, User, Calendar, Package, FileText, Search, Plus, Trash2, ChevronDown } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, CheckCircle, XCircle, AlertTriangle, Loader2, ChevronRight, User, Calendar, FileText } from 'lucide-react';
 import { maintenanceService } from '../../services/maintenanceService';
-import { maintenanceCadastroService, type MaintenanceMaterial } from '../../services/maintenanceCadastroService';
+import { maintenanceCadastroService } from '../../services/maintenanceCadastroService';
 import type { MaintenanceOrder } from '../../types/maintenance';
 
 interface Notification {
@@ -10,21 +10,12 @@ interface Notification {
   maintenance_orders: MaintenanceOrder;
 }
 
-interface SelectedMaterial {
-  id: string;
-  name: string;
-  unit: string;
-  warehouse_code: string;
-  quantity: number;
-}
-
 interface ServiceOrderForm {
   assigned_to: string;
   start_date: string;
   estimated_completion: string;
   estimated_downtime_hours: string;
   estimated_cost: string;
-  materials_needed: SelectedMaterial[];
   action_plan: string;
 }
 
@@ -42,7 +33,6 @@ const emptyServiceForm: ServiceOrderForm = {
   estimated_completion: '',
   estimated_downtime_hours: '',
   estimated_cost: '',
-  materials_needed: [],
   action_plan: '',
 };
 
@@ -52,71 +42,15 @@ export function MaintenanceApprovalModal({ notification, approverName, onClose, 
   const [rejectionReason, setRejectionReason] = useState('');
   const [loading, setLoading] = useState(false);
   const [technicians, setTechnicians] = useState<{ id: string; name: string }[]>([]);
-  const [materialList, setMaterialList] = useState<MaintenanceMaterial[]>([]);
-  const [materialSearch, setMaterialSearch] = useState('');
-  const [showMaterialDropdown, setShowMaterialDropdown] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const order = notification.maintenance_orders;
 
   useEffect(() => {
     maintenanceCadastroService.getTechnicians().then(setTechnicians);
-    maintenanceCadastroService.getMaterials().then(setMaterialList);
   }, []);
 
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setShowMaterialDropdown(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const filteredMaterials = materialList.filter(m => {
-    const q = materialSearch.toLowerCase();
-    return m.name.toLowerCase().includes(q) || (m.warehouse_code || '').toLowerCase().includes(q);
-  });
-
-  const addMaterial = (material: MaintenanceMaterial) => {
-    const already = serviceForm.materials_needed.find(m => m.id === material.id);
-    if (already) {
-      setServiceForm(prev => ({
-        ...prev,
-        materials_needed: prev.materials_needed.map(m =>
-          m.id === material.id ? { ...m, quantity: m.quantity + 1 } : m
-        ),
-      }));
-    } else {
-      setServiceForm(prev => ({
-        ...prev,
-        materials_needed: [
-          ...prev.materials_needed,
-          { id: material.id, name: material.name, unit: material.unit || 'un', warehouse_code: material.warehouse_code || '', quantity: 1 },
-        ],
-      }));
-    }
-    setMaterialSearch('');
-    setShowMaterialDropdown(false);
-  };
-
-  const removeMaterial = (id: string) => {
-    setServiceForm(prev => ({
-      ...prev,
-      materials_needed: prev.materials_needed.filter(m => m.id !== id),
-    }));
-  };
-
-  const updateQty = (id: string, qty: number) => {
-    if (qty < 1) return;
-    setServiceForm(prev => ({
-      ...prev,
-      materials_needed: prev.materials_needed.map(m =>
-        m.id === id ? { ...m, quantity: qty } : m
-      ),
-    }));
-  };
+  const sf = (field: keyof ServiceOrderForm, value: string) =>
+    setServiceForm(p => ({ ...p, [field]: value }));
 
   const handleApprove = async () => {
     setLoading(true);
@@ -128,7 +62,6 @@ export function MaintenanceApprovalModal({ notification, approverName, onClose, 
         estimated_completion: serviceForm.estimated_completion,
         estimated_downtime_hours: serviceForm.estimated_downtime_hours ? parseFloat(serviceForm.estimated_downtime_hours) : null,
         estimated_cost: serviceForm.estimated_cost ? parseFloat(serviceForm.estimated_cost) : null,
-        materials_needed: serviceForm.materials_needed,
         action_plan: serviceForm.action_plan,
         approved_by: approverName,
         approved_at: new Date().toISOString(),
@@ -163,9 +96,6 @@ export function MaintenanceApprovalModal({ notification, approverName, onClose, 
     'Alta': 'bg-orange-100 text-orange-700',
     'Crítica': 'bg-red-100 text-red-700',
   };
-
-  const sf = (field: keyof Omit<ServiceOrderForm, 'materials_needed'>, value: string) =>
-    setServiceForm(p => ({ ...p, [field]: value }));
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
@@ -293,99 +223,6 @@ export function MaintenanceApprovalModal({ notification, approverName, onClose, 
                     onChange={e => sf('estimated_completion', e.target.value)}
                     className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                   />
-                </div>
-
-                <div className="sm:col-span-2">
-                  <label className="flex items-center gap-1.5 text-xs font-semibold text-gray-700 mb-1.5">
-                    <Package className="w-3.5 h-3.5 text-teal-500" />
-                    Materiais Necessarios
-                  </label>
-
-                  <div className="relative" ref={dropdownRef}>
-                    <div
-                      className="flex items-center gap-2 w-full px-3 py-2.5 border border-gray-200 rounded-xl bg-white cursor-text focus-within:ring-2 focus-within:ring-teal-500 focus-within:border-transparent"
-                      onClick={() => setShowMaterialDropdown(true)}
-                    >
-                      <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                      <input
-                        type="text"
-                        value={materialSearch}
-                        onChange={e => { setMaterialSearch(e.target.value); setShowMaterialDropdown(true); }}
-                        onFocus={() => setShowMaterialDropdown(true)}
-                        placeholder="Buscar material por nome ou codigo..."
-                        className="flex-1 text-sm outline-none bg-transparent"
-                      />
-                      <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                    </div>
-
-                    {showMaterialDropdown && (
-                      <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-20 max-h-48 overflow-y-auto">
-                        {filteredMaterials.length === 0 ? (
-                          <div className="px-4 py-3 text-sm text-gray-400">Nenhum material encontrado</div>
-                        ) : (
-                          filteredMaterials.map(m => (
-                            <button
-                              key={m.id}
-                              type="button"
-                              onClick={() => addMaterial(m)}
-                              className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-teal-50 text-left transition-colors"
-                            >
-                              <div>
-                                <span className="text-sm font-medium text-gray-900">{m.name}</span>
-                                {m.warehouse_code && (
-                                  <span className="ml-2 text-xs text-gray-400">Alm: {m.warehouse_code}</span>
-                                )}
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs text-gray-400">{m.unit || 'un'}</span>
-                                <Plus className="w-3.5 h-3.5 text-teal-600" />
-                              </div>
-                            </button>
-                          ))
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  {serviceForm.materials_needed.length > 0 && (
-                    <div className="mt-2 space-y-2">
-                      {serviceForm.materials_needed.map(item => (
-                        <div key={item.id} className="flex items-center gap-3 px-3 py-2 bg-gray-50 border border-gray-100 rounded-xl">
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900 truncate">{item.name}</p>
-                            {item.warehouse_code && (
-                              <p className="text-xs text-gray-400">Alm: {item.warehouse_code}</p>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-1.5 flex-shrink-0">
-                            <button
-                              type="button"
-                              onClick={() => updateQty(item.id, item.quantity - 1)}
-                              className="w-6 h-6 flex items-center justify-center bg-white border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-100 text-xs font-bold"
-                            >
-                              −
-                            </button>
-                            <span className="w-10 text-center text-sm font-semibold text-gray-800">{item.quantity}</span>
-                            <button
-                              type="button"
-                              onClick={() => updateQty(item.id, item.quantity + 1)}
-                              className="w-6 h-6 flex items-center justify-center bg-white border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-100 text-xs font-bold"
-                            >
-                              +
-                            </button>
-                            <span className="text-xs text-gray-400 w-6">{item.unit}</span>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => removeMaterial(item.id)}
-                            className="p-1 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
-                          >
-                            <Trash2 className="w-3.5 h-3.5 text-red-400" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
                 </div>
 
                 <div className="sm:col-span-2">
