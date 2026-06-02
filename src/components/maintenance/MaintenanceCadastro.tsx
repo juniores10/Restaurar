@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { Plus, Trash2, Save, X, Loader2, Pencil, Wrench, MapPin, Package, User, Star, AlertTriangle, CheckCircle, XCircle, Search, FileText, FileSpreadsheet, ChevronDown, AlertCircle } from 'lucide-react';
+import { Plus, Trash2, Save, X, Loader2, Pencil, Wrench, MapPin, Package, User, Star, AlertTriangle, CheckCircle, XCircle, Search, FileText, FileSpreadsheet, ChevronDown, AlertCircle, ClipboardList } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
@@ -70,6 +70,8 @@ export function MaintenanceCadastro() {
   const [selectedEquipmentIds, setSelectedEquipmentIds] = useState<string[]>([]);
   const [eqDropdownOpen, setEqDropdownOpen] = useState(false);
   const eqDropdownRef = useRef<HTMLDivElement>(null);
+  const [historyModal, setHistoryModal] = useState<{ equipmentName: string; orders: any[] } | null>(null);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
   useEffect(() => {
     loadAll();
@@ -464,6 +466,23 @@ export function MaintenanceCadastro() {
       headStyles: { fillColor: [13, 148, 136] },
     });
     doc.save('materiais_manutencao.pdf');
+  };
+
+  const openEquipmentHistory = async (equipmentName: string) => {
+    setLoadingHistory(true);
+    try {
+      const { data, error } = await supabase
+        .from('maintenance_orders')
+        .select('*')
+        .eq('equipment', equipmentName)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      setHistoryModal({ equipmentName, orders: data || [] });
+    } catch (err: any) {
+      alert('Erro ao carregar historico: ' + err.message);
+    } finally {
+      setLoadingHistory(false);
+    }
   };
 
   const currentTab = TABS.find(t => t.id === activeTab)!;
@@ -1078,17 +1097,29 @@ export function MaintenanceCadastro() {
               <div key={item.id} className="flex items-center justify-between px-5 py-3 hover:bg-gray-50 transition-colors group">
                 <div className="flex items-center gap-3 min-w-0">
                   <div className={`w-2 h-2 rounded-full flex-shrink-0 ${item.status === 0 ? 'bg-emerald-500' : 'bg-gray-300'}`} />
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-gray-800 truncate">{item.name}</p>
-                    <p className="text-xs text-gray-400 truncate">{getSubtitle(item)}</p>
-                    {activeTab === 'equipment' && item.status === 1 && item.inactivated_at && (
-                      <p className="text-xs text-red-400 mt-0.5">
-                        Inativado em {new Date(item.inactivated_at).toLocaleDateString('pt-BR')}
-                        {item.inactivation_reason ? ` — ${item.inactivation_reason}` : ''}
-                      </p>
-                    )}
-                    {activeTab === 'materials' && item.description && (
-                      <p className="text-xs text-gray-400 mt-0.5 truncate">{item.description}</p>
+                  <div className="min-w-0 flex items-center gap-2">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-gray-800 truncate">{item.name}</p>
+                      <p className="text-xs text-gray-400 truncate">{getSubtitle(item)}</p>
+                      {activeTab === 'equipment' && item.status === 1 && item.inactivated_at && (
+                        <p className="text-xs text-red-400 mt-0.5">
+                          Inativado em {new Date(item.inactivated_at).toLocaleDateString('pt-BR')}
+                          {item.inactivation_reason ? ` — ${item.inactivation_reason}` : ''}
+                        </p>
+                      )}
+                      {activeTab === 'materials' && item.description && (
+                        <p className="text-xs text-gray-400 mt-0.5 truncate">{item.description}</p>
+                      )}
+                    </div>
+                    {activeTab === 'equipment' && (
+                      <button
+                        onClick={() => openEquipmentHistory(item.name)}
+                        className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-teal-700 bg-teal-50 hover:bg-teal-100 border border-teal-200 rounded-lg transition-colors flex-shrink-0"
+                        title="Historico de Manutencoes"
+                      >
+                        <ClipboardList className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">Historico</span>
+                      </button>
                     )}
                   </div>
                 </div>
@@ -1157,6 +1188,124 @@ export function MaintenanceCadastro() {
               >
                 <XCircle className="w-4 h-4" />
                 Confirmar Inativacao
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {historyModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+              <div>
+                <h2 className="text-lg font-bold text-gray-900">Historico de Manutencoes</h2>
+                <p className="text-sm text-gray-500 mt-0.5">{historyModal.equipmentName}</p>
+              </div>
+              <button onClick={() => setHistoryModal(null)} className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-6">
+              {historyModal.orders.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+                  <ClipboardList className="w-12 h-12 mb-3 opacity-30" />
+                  <p className="text-sm font-medium">Nenhuma manutencao registrada</p>
+                  <p className="text-xs mt-1">Este equipamento ainda nao possui historico de chamados</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {historyModal.orders.map((o: any) => {
+                    const statusColor =
+                      o.status === 'Concluído' ? 'bg-emerald-100 text-emerald-700' :
+                      o.status === 'Aberto' ? 'bg-amber-100 text-amber-700' :
+                      o.status === 'Em Andamento' ? 'bg-blue-100 text-blue-700' :
+                      o.status === 'Agendado' ? 'bg-teal-100 text-teal-700' :
+                      o.status === 'Cancelado' ? 'bg-red-100 text-red-700' :
+                      'bg-gray-100 text-gray-700';
+                    return (
+                      <div key={o.id} className="border border-gray-100 rounded-xl p-4 hover:border-gray-200 transition-colors">
+                        <div className="flex items-start justify-between gap-3 mb-2">
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-xs font-mono text-gray-500">{o.order_number}</span>
+                              <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${statusColor}`}>{o.status}</span>
+                              {o.maintenance_type && (
+                                <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-600">{o.maintenance_type}</span>
+                              )}
+                              {o.priority && (
+                                <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
+                                  o.priority === 'Crítica' ? 'bg-red-100 text-red-700' :
+                                  o.priority === 'Alta' ? 'bg-orange-100 text-orange-700' :
+                                  o.priority === 'Média' ? 'bg-amber-100 text-amber-700' :
+                                  'bg-gray-100 text-gray-600'
+                                }`}>{o.priority}</span>
+                              )}
+                            </div>
+                            <p className="text-sm font-semibold text-gray-800 mt-1">{o.title}</p>
+                          </div>
+                          <span className="text-xs text-gray-400 flex-shrink-0">{new Date(o.created_at).toLocaleDateString('pt-BR')}</span>
+                        </div>
+                        {o.description && (
+                          <p className="text-xs text-gray-500 mb-2 line-clamp-2">{o.description}</p>
+                        )}
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                          {o.fault_type && (
+                            <div>
+                              <span className="text-gray-400">Falha:</span>
+                              <span className="ml-1 text-gray-700">{o.fault_type}</span>
+                            </div>
+                          )}
+                          {o.requested_by && (
+                            <div>
+                              <span className="text-gray-400">Solicitante:</span>
+                              <span className="ml-1 text-gray-700">{o.requested_by}</span>
+                            </div>
+                          )}
+                          {o.actual_downtime_hours > 0 && (
+                            <div>
+                              <span className="text-gray-400">Downtime:</span>
+                              <span className="ml-1 text-gray-700">{o.actual_downtime_hours}h</span>
+                            </div>
+                          )}
+                          {o.actual_cost > 0 && (
+                            <div>
+                              <span className="text-gray-400">Custo:</span>
+                              <span className="ml-1 text-gray-700">R$ {Number(o.actual_cost).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                            </div>
+                          )}
+                          {o.started_at && (
+                            <div>
+                              <span className="text-gray-400">Inicio:</span>
+                              <span className="ml-1 text-gray-700">{new Date(o.started_at).toLocaleDateString('pt-BR')}</span>
+                            </div>
+                          )}
+                          {o.completed_at && (
+                            <div>
+                              <span className="text-gray-400">Concluido:</span>
+                              <span className="ml-1 text-gray-700">{new Date(o.completed_at).toLocaleDateString('pt-BR')}</span>
+                            </div>
+                          )}
+                        </div>
+                        {o.resolution_notes && (
+                          <div className="mt-2 pt-2 border-t border-gray-50">
+                            <p className="text-xs text-gray-400 font-medium mb-0.5">Resolucao:</p>
+                            <p className="text-xs text-gray-600">{o.resolution_notes}</p>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+            <div className="border-t border-gray-100 px-6 py-3 flex justify-between items-center">
+              <p className="text-xs text-gray-400">{historyModal.orders.length} registro{historyModal.orders.length !== 1 ? 's' : ''}</p>
+              <button
+                onClick={() => setHistoryModal(null)}
+                className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-xl transition-colors"
+              >
+                Fechar
               </button>
             </div>
           </div>
