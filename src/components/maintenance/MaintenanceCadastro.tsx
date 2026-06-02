@@ -413,24 +413,6 @@ export function MaintenanceCadastro() {
     });
   }, [materials, matFilterName, matFilterEquipment, matFilterTag]);
 
-  const filteredItems = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
-    if (!q) return items;
-    return items.filter(item => {
-      const name = (item.name || '').toLowerCase();
-      const tag = (item.tag_code || '').toLowerCase();
-      const manufacturer = (item.manufacturer || '').toLowerCase();
-      const model = (item.model || '').toLowerCase();
-      const sector = (item.sector || '').toLowerCase();
-      const description = (item.description || '').toLowerCase();
-      const specialty = (item.maintenance_specialties?.name || '').toLowerCase();
-      const warehouseCode = (item.warehouse_code || '').toLowerCase();
-      return name.includes(q) || tag.includes(q) || manufacturer.includes(q) ||
-        model.includes(q) || sector.includes(q) || description.includes(q) ||
-        specialty.includes(q) || warehouseCode.includes(q);
-    });
-  }, [items, searchQuery]);
-
   const exportMaterialsExcel = () => {
     const rows = filteredMaterials.map(m => ({
       'Codigo Almoxarifado': m.warehouse_code || '',
@@ -472,6 +454,25 @@ export function MaintenanceCadastro() {
 
   const currentTab = TABS.find(t => t.id === activeTab)!;
   const items = getItems();
+
+  const filteredItems = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return items;
+    return items.filter(item => {
+      const name = (item.name || '').toLowerCase();
+      const tag = (item.tag_code || '').toLowerCase();
+      const manufacturer = (item.manufacturer || '').toLowerCase();
+      const model = (item.model || '').toLowerCase();
+      const sector = (item.sector || '').toLowerCase();
+      const description = (item.description || '').toLowerCase();
+      const specialty = (item.maintenance_specialties?.name || '').toLowerCase();
+      const warehouseCode = (item.warehouse_code || '').toLowerCase();
+      return name.includes(q) || tag.includes(q) || manufacturer.includes(q) ||
+        model.includes(q) || sector.includes(q) || description.includes(q) ||
+        specialty.includes(q) || warehouseCode.includes(q);
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items, searchQuery]);
 
   return (
     <div className="space-y-4">
