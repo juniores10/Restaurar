@@ -240,9 +240,11 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
                         onClick={() => {
                           if (hasSubItems) {
                             setExpandedMenus(prev => prev.includes(item.id) ? prev.filter(id => id !== item.id) : [...prev, item.id]);
+                            if (!isExpanded) onNavigate(item.id);
+                          } else {
+                            onNavigate(item.id);
+                            setIsMobileMenuOpen(false);
                           }
-                          onNavigate(item.id);
-                          if (!hasSubItems) setIsMobileMenuOpen(false);
                           if (item.id === 'documents') loadUnreadCount();
                         }}
                         className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all min-h-[44px] ${
@@ -354,8 +356,10 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
                     onClick={() => {
                       if (hasSubItems && !isSidebarCollapsed) {
                         setExpandedMenus(prev => prev.includes(item.id) ? prev.filter(id => id !== item.id) : [...prev, item.id]);
+                        if (!isExpanded) onNavigate(item.id);
+                      } else {
+                        onNavigate(item.id);
                       }
-                      onNavigate(item.id);
                       if (item.id === 'documents') loadUnreadCount();
                     }}
                     className={`w-full flex items-center gap-3 ${isSidebarCollapsed ? 'justify-center px-3' : 'px-4'} py-3 rounded-xl transition-all ${
