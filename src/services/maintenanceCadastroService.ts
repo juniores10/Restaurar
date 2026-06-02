@@ -5,6 +5,7 @@ export interface MaintenanceEquipment {
   name: string;
   tag_code: string;
   location_id: string | null;
+  sector: string;
   manufacturer: string;
   serial_number: string;
   model: string;
@@ -84,6 +85,7 @@ export const maintenanceCadastroService = {
     name: string;
     tag_code: string;
     location_id: string | null;
+    sector?: string;
     manufacturer?: string;
     serial_number?: string;
     model?: string;
@@ -98,6 +100,7 @@ export const maintenanceCadastroService = {
     name: string;
     tag_code: string;
     location_id: string | null;
+    sector: string;
     manufacturer: string;
     serial_number: string;
     model: string;

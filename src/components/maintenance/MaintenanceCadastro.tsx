@@ -38,7 +38,7 @@ const TABS: TabConfig[] = [
   { id: 'occurrences', label: 'Tipo de Falha', icon: AlertCircle, description: 'Tipos de falha e ocorrencias' },
 ];
 
-const emptyEquipmentForm = { name: '', tag_code: '', location_id: '', manufacturer: '', serial_number: '', model: '', installation_date: '', hourly_cost: 0 };
+const emptyEquipmentForm = { name: '', tag_code: '', location_id: '', sector: '', manufacturer: '', serial_number: '', model: '', installation_date: '', hourly_cost: 0 };
 const emptySimpleForm = { name: '', description: '' };
 const emptyMaterialForm = { name: '', unit: 'un', equipment_id: '', warehouse_code: '', description: '' };
 const emptyTechnicianForm = { name: '', specialty_id: '' };
@@ -57,6 +57,7 @@ export function MaintenanceCadastro() {
   const [technicians, setTechnicians] = useState<MaintenanceTechnician[]>([]);
   const [specialties, setSpecialties] = useState<MaintenanceSpecialty[]>([]);
   const [locations, setLocations] = useState<MaintenanceLocation[]>([]);
+  const [sectorList, setSectorList] = useState<{ id: string; description: string }[]>([]);
   const [employees, setEmployees] = useState<SimpleEmployee[]>([]);
   const [inactivationModal, setInactivationModal] = useState<{ item: MaintenanceEquipment } | null>(null);
   const [inactivationReason, setInactivationReason] = useState('');
@@ -69,6 +70,8 @@ export function MaintenanceCadastro() {
 
   useEffect(() => {
     loadAll();
+    supabase.from('data_types').select('id, description').eq('type', 8).eq('status', 0).order('description')
+      .then(({ data }) => setSectorList(data || []));
     supabase
       .from('employees')
       .select('id, name, data_types!position_id(description)')
@@ -150,6 +153,7 @@ export function MaintenanceCadastro() {
         name: item.name,
         tag_code: item.tag_code || '',
         location_id: item.location_id || '',
+        sector: item.sector || '',
         manufacturer: item.manufacturer || '',
         serial_number: item.serial_number || '',
         model: item.model || '',
@@ -185,6 +189,7 @@ export function MaintenanceCadastro() {
           name: formData.name.trim(),
           tag_code: formData.tag_code || '',
           location_id: formData.location_id || null,
+          sector: formData.sector || '',
           manufacturer: formData.manufacturer || '',
           serial_number: formData.serial_number || '',
           model: formData.model || '',
@@ -347,7 +352,7 @@ export function MaintenanceCadastro() {
       if (item.tag_code) parts.push(`TAG: ${item.tag_code}`);
       if (item.manufacturer) parts.push(item.manufacturer);
       if (item.model) parts.push(item.model);
-      if (item.maintenance_locations?.name) parts.push(item.maintenance_locations.name);
+      if (item.sector) parts.push(item.sector);
       return parts.join(' • ') || '—';
     }
     if (activeTab === 'materials') {
@@ -598,15 +603,15 @@ export function MaintenanceCadastro() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Localizacao</label>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Setor</label>
                       <select
-                        value={formData.location_id || ''}
-                        onChange={e => setFormData(p => ({ ...p, location_id: e.target.value }))}
+                        value={formData.sector || ''}
+                        onChange={e => setFormData(p => ({ ...p, sector: e.target.value }))}
                         className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                       >
                         <option value="">Selecionar...</option>
-                        {locations.filter(l => l.status === 0).map(l => (
-                          <option key={l.id} value={l.id}>{l.name}</option>
+                        {sectorList.map(s => (
+                          <option key={s.id} value={s.description}>{s.description}</option>
                         ))}
                       </select>
                     </div>
