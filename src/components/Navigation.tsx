@@ -354,7 +354,7 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
             {menuItems.map((item) => {
               const Icon = item.icon;
               const showBadge = item.id === 'documents' && unreadDocsCount > 0;
-              const hasSubItems = item.subItems && item.subItems.length > 0;
+              const hasSubItems = !!(item.subItems && item.subItems.length > 0);
               const isExpanded = expandedMenus.includes(item.id);
               const isActive = currentView === item.id || (hasSubItems && item.subItems!.some(sub => currentView === sub.id));
               return (
@@ -362,7 +362,9 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
                   <button
                     onClick={() => {
                       if (hasSubItems && !isSidebarCollapsed) {
-                        setExpandedMenus(prev => prev.includes(item.id) ? prev.filter(id => id !== item.id) : [...prev, item.id]);
+                        if (!expandedMenus.includes(item.id)) {
+                          setExpandedMenus(prev => [...prev, item.id]);
+                        }
                       }
                       onNavigate(item.id);
                       if (item.id === 'documents') loadUnreadCount();
@@ -384,7 +386,7 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
                           </span>
                         )}
                         {hasSubItems && (
-                          <ChevronDown className={`w-4 h-4 ml-auto transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                          <ChevronDown className={`w-4 h-4 ml-auto transition-transform ${(isExpanded || isActive) ? 'rotate-180' : ''}`} />
                         )}
                       </>
                     )}
@@ -392,9 +394,9 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
                       <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
                     )}
                   </button>
-                  {item.subItems && item.subItems.length > 0 && (isExpanded || isActive) && !isSidebarCollapsed && (
+                  {hasSubItems && (isExpanded || isActive) && !isSidebarCollapsed && (
                     <div className="ml-4 mt-1 space-y-1 border-l-2 border-white/20 pl-3">
-                      {item.subItems.map(sub => {
+                      {item.subItems!.map(sub => {
                         const SubIcon = sub.icon;
                         return (
                           <button
@@ -560,36 +562,72 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
           {menuItems.map((item) => {
             const Icon = item.icon;
             const showBadge = item.id === 'documents' && unreadDocsCount > 0 && !canManageSystem();
+            const hasSubItems = !!(item.subItems && item.subItems.length > 0);
+            const isExpanded = expandedMenus.includes(item.id);
+            const isActive = currentView === item.id || (hasSubItems && item.subItems!.some(sub => currentView === sub.id));
             return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  onNavigate(item.id);
-                  setIsMobileMenuOpen(false);
-                  if (item.id === 'documents') loadUnreadCount();
-                }}
-                className={`w-full flex items-center gap-3 ${isSidebarCollapsed ? 'justify-center px-3' : 'px-4'} py-3.5 rounded-xl transition-all min-h-[44px] ${
-                  currentView === item.id
-                    ? 'bg-pion-cyan text-white shadow-lg shadow-pion-cyan/30'
-                    : 'text-white/70 hover:bg-white/10 hover:text-white'
-                }`}
-                title={isSidebarCollapsed ? item.label : undefined}
-              >
-                <Icon className="w-5 h-5 flex-shrink-0" />
-                {!isSidebarCollapsed && (
-                  <>
-                    <span className="font-medium">{item.label}</span>
-                    {showBadge && (
-                      <span className="ml-auto px-2 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full min-w-[20px] text-center">
-                        {unreadDocsCount > 99 ? '99+' : unreadDocsCount}
-                      </span>
-                    )}
-                  </>
+              <div key={item.id}>
+                <button
+                  onClick={() => {
+                    if (hasSubItems && !isSidebarCollapsed) {
+                      if (!expandedMenus.includes(item.id)) {
+                        setExpandedMenus(prev => [...prev, item.id]);
+                      }
+                    }
+                    onNavigate(item.id);
+                    setIsMobileMenuOpen(false);
+                    if (item.id === 'documents') loadUnreadCount();
+                  }}
+                  className={`w-full flex items-center gap-3 ${isSidebarCollapsed ? 'justify-center px-3' : 'px-4'} py-3.5 rounded-xl transition-all min-h-[44px] ${
+                    isActive
+                      ? 'bg-pion-cyan text-white shadow-lg shadow-pion-cyan/30'
+                      : 'text-white/70 hover:bg-white/10 hover:text-white'
+                  }`}
+                  title={isSidebarCollapsed ? item.label : undefined}
+                >
+                  <Icon className="w-5 h-5 flex-shrink-0" />
+                  {!isSidebarCollapsed && (
+                    <>
+                      <span className="font-medium">{item.label}</span>
+                      {showBadge && (
+                        <span className="ml-auto px-2 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full min-w-[20px] text-center">
+                          {unreadDocsCount > 99 ? '99+' : unreadDocsCount}
+                        </span>
+                      )}
+                      {hasSubItems && (
+                        <ChevronDown className={`w-4 h-4 ml-auto transition-transform ${(isExpanded || isActive) ? 'rotate-180' : ''}`} />
+                      )}
+                    </>
+                  )}
+                  {isSidebarCollapsed && showBadge && (
+                    <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                  )}
+                </button>
+                {hasSubItems && (isExpanded || isActive) && !isSidebarCollapsed && (
+                  <div className="ml-4 mt-1 space-y-1 border-l-2 border-white/20 pl-3">
+                    {item.subItems!.map(sub => {
+                      const SubIcon = sub.icon;
+                      return (
+                        <button
+                          key={sub.id}
+                          onClick={() => {
+                            onNavigate(sub.id);
+                            setIsMobileMenuOpen(false);
+                          }}
+                          className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all ${
+                            currentView === sub.id
+                              ? 'bg-white/20 text-white font-medium'
+                              : 'text-white/60 hover:bg-white/10 hover:text-white'
+                          }`}
+                        >
+                          <SubIcon className="w-4 h-4 flex-shrink-0" />
+                          <span>{sub.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 )}
-                {isSidebarCollapsed && showBadge && (
-                  <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                )}
-              </button>
+              </div>
             );
           })}
         </nav>
