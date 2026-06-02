@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Package, Plus, Search, Download, Trash2, CreditCard as Edit3, X, Save, Loader2, Calendar, Filter } from 'lucide-react';
+import { Package, Plus, Search, Download, Trash2, CreditCard as Edit3, X, Save, Loader2, Calendar, Filter, BarChart3, List } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { ExpeditionDashboard } from './ExpeditionDashboard';
 
 interface ExpeditionRecord {
   id: string;
@@ -38,6 +39,7 @@ const STATES = [
 ];
 
 export function ExpeditionManagement() {
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'records'>('dashboard');
   const [records, setRecords] = useState<ExpeditionRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -193,37 +195,70 @@ export function ExpeditionManagement() {
           <p className="text-gray-500 mt-1">Controle de pedidos expedidos</p>
         </div>
         <div className="flex items-center gap-3">
-          <button
-            onClick={exportCSV}
-            className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors text-sm font-medium"
-          >
-            <Download className="w-4 h-4" />
-            Exportar
-          </button>
-          <button
-            onClick={openNewForm}
-            className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors text-sm font-medium shadow-sm"
-          >
-            <Plus className="w-4 h-4" />
-            Novo Registro
-          </button>
+          {activeTab === 'records' && (
+            <>
+              <button
+                onClick={exportCSV}
+                className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors text-sm font-medium"
+              >
+                <Download className="w-4 h-4" />
+                Exportar
+              </button>
+              <button
+                onClick={openNewForm}
+                className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors text-sm font-medium shadow-sm"
+              >
+                <Plus className="w-4 h-4" />
+                Novo Registro
+              </button>
+            </>
+          )}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
-          <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Registros</p>
-          <p className="text-2xl font-bold text-gray-800 mt-1">{filteredRecords.length}</p>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
-          <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Total de Caixas</p>
-          <p className="text-2xl font-bold text-blue-600 mt-1">{totalBoxes}</p>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
-          <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Expedidos</p>
-          <p className="text-2xl font-bold text-green-600 mt-1">{totalShipped}</p>
-        </div>
+      <div className="flex items-center gap-1 bg-white rounded-xl border border-gray-200 p-1 w-fit">
+        <button
+          onClick={() => setActiveTab('dashboard')}
+          className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+            activeTab === 'dashboard'
+              ? 'bg-blue-600 text-white shadow-sm'
+              : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+          }`}
+        >
+          <BarChart3 className="w-4 h-4" />
+          Dashboard
+        </button>
+        <button
+          onClick={() => setActiveTab('records')}
+          className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+            activeTab === 'records'
+              ? 'bg-blue-600 text-white shadow-sm'
+              : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+          }`}
+        >
+          <List className="w-4 h-4" />
+          Registros
+        </button>
       </div>
+
+      {activeTab === 'dashboard' ? (
+        <ExpeditionDashboard />
+      ) : (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
+              <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Registros</p>
+              <p className="text-2xl font-bold text-gray-800 mt-1">{filteredRecords.length}</p>
+            </div>
+            <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
+              <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Total de Caixas</p>
+              <p className="text-2xl font-bold text-blue-600 mt-1">{totalBoxes}</p>
+            </div>
+            <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
+              <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Expedidos</p>
+              <p className="text-2xl font-bold text-green-600 mt-1">{totalShipped}</p>
+            </div>
+          </div>
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
         <div className="p-4 border-b border-gray-100 flex flex-col md:flex-row gap-3 items-start md:items-center justify-between">
@@ -329,6 +364,8 @@ export function ExpeditionManagement() {
           </div>
         )}
       </div>
+        </>
+      )}
 
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
@@ -487,3 +524,6 @@ export function ExpeditionManagement() {
     </div>
   );
 }
+
+
+export { ExpeditionManagement }
