@@ -116,7 +116,7 @@ export function MainApp() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-slate-50">
       <Navigation
         currentView={currentView}
         onNavigate={setCurrentView}
@@ -130,11 +130,11 @@ export function MainApp() {
       <main className={`${
         (isEmployee() || isTerceirizado())
           ? isSidebarCollapsed
-            ? 'pt-14 pb-20 md:pb-0 md:pl-20'
-            : 'pt-14 pb-20 md:pb-0 md:pl-64'
+            ? 'pt-14 pb-20 md:pb-0 md:pl-[68px]'
+            : 'pt-14 pb-20 md:pb-0 md:pl-60'
           : isSidebarCollapsed
-            ? 'pt-16 md:pl-20'
-            : 'pt-16 md:pl-64'
+            ? 'pt-14 md:pl-[68px]'
+            : 'pt-14 md:pl-60'
       }`}>
         {renderView()}
       </main>

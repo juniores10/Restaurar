@@ -180,40 +180,40 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
   if (isEmployee() || isTerceirizado()) {
     return (
       <>
-        <nav className="gradient-pion shadow-xl fixed top-0 left-0 right-0 z-50 border-b border-white/10">
+        <nav className="bg-white border-b border-gray-200 fixed top-0 left-0 right-0 z-50 shadow-sm">
           <div className="px-4 h-14 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setIsMobileMenuOpen(true)}
-                className="md:hidden w-11 h-11 flex items-center justify-center text-white/80 hover:text-white hover:bg-white/10 rounded-xl transition-all"
+                className="md:hidden w-10 h-10 flex items-center justify-center text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-all"
               >
                 <Menu className="w-5 h-5" />
               </button>
-              <h1 className="text-lg font-bold text-white truncate">Pion G Plus</h1>
+              <h1 className="text-base font-bold text-slate-800 truncate tracking-tight">Pion G Plus</h1>
             </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={onToggleEmployeeNotifications}
-                className={`relative w-11 h-11 flex items-center justify-center rounded-xl transition-all ${
+                className={`relative w-10 h-10 flex items-center justify-center rounded-lg transition-all ${
                   showEmployeeNotifications
-                    ? 'bg-white/20 text-white'
-                    : 'text-white/80 hover:text-white hover:bg-white/10'
+                    ? 'bg-sky-50 text-sky-600'
+                    : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'
                 }`}
                 title="Notificacoes"
               >
                 <Bell className="w-5 h-5" />
                 {unreadEmployeeNotificationsCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center animate-pulse shadow-lg">
+                  <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-sm">
                     {unreadEmployeeNotificationsCount > 9 ? '9+' : unreadEmployeeNotificationsCount}
                   </span>
                 )}
               </button>
               <div className="hidden sm:block text-right">
-                <div className="text-sm font-medium text-white truncate max-w-[150px]">{employeeProfile?.full_name}</div>
+                <div className="text-sm font-medium text-slate-700 truncate max-w-[150px]">{employeeProfile?.full_name}</div>
               </div>
               <button
                 onClick={handleSignOut}
-                className="w-11 h-11 flex items-center justify-center text-white/80 hover:text-red-300 hover:bg-red-500/20 rounded-xl transition-all"
+                className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
               >
                 <LogOut className="w-5 h-5" />
               </button>
@@ -222,40 +222,40 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
         </nav>
 
         {isMobileMenuOpen && (
-          <div className="md:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}>
+          <div className="md:hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}>
             <div
-              className="absolute top-0 left-0 bottom-0 w-72 gradient-pion-dark shadow-2xl overflow-y-auto"
+              className="absolute top-0 left-0 bottom-0 w-72 bg-slate-900 shadow-2xl overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="p-4 border-b border-white/10 flex items-center justify-between">
-                <h2 className="text-lg font-bold text-white">Menu</h2>
+              <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+                <h2 className="text-base font-semibold text-white">Menu</h2>
                 <button
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="w-11 h-11 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-all"
+                  className="w-10 h-10 flex items-center justify-center text-slate-500 hover:text-white hover:bg-slate-800 rounded-lg transition-all"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
               <div className="p-4">
-                <div className="px-4 py-3 bg-white/10 backdrop-blur-sm rounded-xl mb-4 border border-white/10">
+                <div className="px-3 py-3 bg-slate-800 rounded-lg mb-4 border border-slate-700">
                   <div className="flex items-center gap-3">
                     {employeeProfile?.photo_url ? (
-                      <img src={employeeProfile.photo_url} alt="" className="w-10 h-10 rounded-full object-cover ring-2 ring-pion-cyan/50" />
+                      <img src={employeeProfile.photo_url} alt="" className="w-9 h-9 rounded-full object-cover ring-2 ring-sky-500/30" />
                     ) : (
-                      <div className="w-10 h-10 rounded-full bg-pion-cyan/20 flex items-center justify-center ring-2 ring-pion-cyan/50">
-                        <User className="w-5 h-5 text-pion-cyan" />
+                      <div className="w-9 h-9 rounded-full bg-sky-500/20 flex items-center justify-center ring-2 ring-sky-500/30">
+                        <User className="w-4 h-4 text-sky-400" />
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-white truncate">{employeeProfile?.full_name}</p>
-                      <p className="text-xs text-pion-cyan/80 truncate">{employeeProfile?.position_name}</p>
+                      <p className="text-sm font-medium text-white truncate">{employeeProfile?.full_name}</p>
+                      <p className="text-xs text-slate-400 truncate">{employeeProfile?.position_name}</p>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <nav className="px-4 pb-4 space-y-1">
+              <nav className="px-3 pb-4 space-y-0.5">
                 {menuItems.map((item) => {
                   const Icon = item.icon;
                   const showBadge = item.id === 'documents' && unreadDocsCount > 0;
@@ -275,38 +275,38 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
                           }
                           if (item.id === 'documents') loadUnreadCount();
                         }}
-                        className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all min-h-[44px] ${
+                        className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg transition-all text-[13px] ${
                           isActive
-                            ? 'bg-pion-cyan text-white shadow-lg shadow-pion-cyan/30'
-                            : 'text-white/70 hover:bg-white/10 hover:text-white'
+                            ? 'bg-sky-600 text-white font-medium shadow-sm'
+                            : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
                         }`}
                       >
-                        <Icon className="w-5 h-5 flex-shrink-0" />
-                        <span className="font-medium">{item.label}</span>
+                        <Icon className="w-[18px] h-[18px] flex-shrink-0" />
+                        <span>{item.label}</span>
                         {showBadge && (
-                          <span className="ml-auto px-2 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full min-w-[20px] text-center">
+                          <span className="ml-auto px-1.5 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] text-center">
                             {unreadDocsCount > 99 ? '99+' : unreadDocsCount}
                           </span>
                         )}
                         {hasSubItems && (
-                          <ChevronDown className={`w-4 h-4 ml-auto transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                          <ChevronDown className={`w-3.5 h-3.5 ml-auto transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                         )}
                       </button>
                       {hasSubItems && isExpanded && (
-                        <div className="ml-4 mt-1 space-y-1 border-l border-white/20 pl-3">
+                        <div className="ml-3 mt-0.5 space-y-0.5 border-l border-slate-700 pl-2.5">
                           {item.subItems!.map(sub => {
                             const SubIcon = sub.icon;
                             return (
                               <button
                                 key={sub.id}
                                 onClick={() => { onNavigate(sub.id); setIsMobileMenuOpen(false); }}
-                                className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-all min-h-[40px] ${
+                                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-[12px] transition-all ${
                                   currentView === sub.id
-                                    ? 'bg-white/20 text-white font-medium'
-                                    : 'text-white/60 hover:bg-white/10 hover:text-white'
+                                    ? 'bg-sky-600/20 text-sky-400 font-medium'
+                                    : 'text-slate-500 hover:bg-slate-800 hover:text-slate-300'
                                 }`}
                               >
-                                <SubIcon className="w-4 h-4 flex-shrink-0" />
+                                <SubIcon className="w-3.5 h-3.5 flex-shrink-0" />
                                 <span>{sub.label}</span>
                               </button>
                             );
@@ -321,8 +321,8 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
           </div>
         )}
 
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/98 backdrop-blur-xl border-t border-gray-200 shadow-[0_-4px_20px_-4px_rgba(0,90,143,0.15)] safe-area-bottom">
-          <div className="grid grid-cols-5 h-16">
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-[0_-2px_8px_-2px_rgba(0,0,0,0.08)] safe-area-bottom">
+          <div className="grid grid-cols-5 h-14">
             {mobileNavItems.map((item) => {
               const Icon = item.icon;
               const isActive = currentView === item.id;
@@ -335,43 +335,40 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
                     if (item.id === 'documents') loadUnreadCount();
                   }}
                   className={`relative flex flex-col items-center justify-center gap-0.5 transition-all ${
-                    isActive ? 'text-pion-cyan' : 'text-gray-400'
+                    isActive ? 'text-sky-600' : 'text-slate-400'
                   }`}
                 >
-                  <div className={`relative p-1.5 rounded-xl transition-all ${isActive ? 'bg-pion-cyan/10' : ''}`}>
-                    <Icon className={`w-5 h-5 transition-transform ${isActive ? 'scale-110' : ''}`} />
+                  <div className={`relative p-1 rounded-lg transition-all ${isActive ? 'bg-sky-50' : ''}`}>
+                    <Icon className={`w-5 h-5 transition-transform ${isActive ? 'scale-105' : ''}`} />
                     {showBadge && (
-                      <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                      <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
                         {unreadDocsCount > 9 ? '9+' : unreadDocsCount}
                       </span>
                     )}
                   </div>
-                  <span className={`text-[10px] font-semibold transition-all ${isActive ? 'text-pion-cyan' : 'text-gray-400'}`}>
+                  <span className={`text-[10px] font-medium ${isActive ? 'text-sky-600' : 'text-slate-400'}`}>
                     {item.label}
                   </span>
-                  {isActive && (
-                    <div className="absolute bottom-1 w-1 h-1 rounded-full bg-pion-cyan"></div>
-                  )}
                 </button>
               );
             })}
           </div>
         </nav>
 
-        <aside className={`hidden md:block fixed left-0 top-14 bottom-0 ${isSidebarCollapsed ? 'w-20' : 'w-64'} gradient-pion-dark overflow-y-auto transition-all duration-300 shadow-2xl`}>
+        <aside className={`hidden md:block fixed left-0 top-14 bottom-0 ${isSidebarCollapsed ? 'w-[68px]' : 'w-60'} bg-slate-900 overflow-y-auto transition-all duration-300 border-r border-slate-800`}>
           {onToggleSidebar && (
-            <div className="flex justify-end p-2 border-b border-white/10">
+            <div className="flex justify-end px-3 py-2 border-b border-slate-800">
               <button
                 onClick={onToggleSidebar}
-                className="p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                className="p-1.5 text-slate-500 hover:text-slate-300 hover:bg-slate-800 rounded-md transition-colors"
                 title={isSidebarCollapsed ? 'Expandir menu' : 'Recolher menu'}
               >
-                {isSidebarCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
+                {isSidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
               </button>
             </div>
           )}
 
-          <nav className="p-4 space-y-1">
+          <nav className="p-2 space-y-0.5">
             {menuItems.map((item) => {
               const Icon = item.icon;
               const showBadge = item.id === 'documents' && unreadDocsCount > 0;
@@ -390,24 +387,24 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
                       onNavigate(item.id);
                       if (item.id === 'documents') loadUnreadCount();
                     }}
-                    className={`w-full flex items-center gap-3 ${isSidebarCollapsed ? 'justify-center px-3' : 'px-4'} py-3 rounded-xl transition-all ${
+                    className={`w-full flex items-center gap-2.5 ${isSidebarCollapsed ? 'justify-center px-2' : 'px-3'} py-2 rounded-lg transition-all text-[13px] ${
                       isActive
-                        ? 'bg-pion-cyan text-white shadow-lg shadow-pion-cyan/30'
-                        : 'text-white/70 hover:bg-white/10 hover:text-white'
+                        ? 'bg-sky-600 text-white font-medium shadow-sm shadow-sky-600/30'
+                        : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
                     }`}
                     title={isSidebarCollapsed ? item.label : undefined}
                   >
-                    <Icon className="w-5 h-5 flex-shrink-0" />
+                    <Icon className="w-[18px] h-[18px] flex-shrink-0" />
                     {!isSidebarCollapsed && (
                       <>
-                        <span className="font-medium">{item.label}</span>
+                        <span className="truncate">{item.label}</span>
                         {showBadge && (
-                          <span className="ml-auto px-2 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full min-w-[20px] text-center">
+                          <span className="ml-auto px-1.5 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] text-center">
                             {unreadDocsCount > 99 ? '99+' : unreadDocsCount}
                           </span>
                         )}
                         {hasSubItems && (
-                          <ChevronDown className={`w-4 h-4 ml-auto transition-transform ${(isExpanded || isActive) ? 'rotate-180' : ''}`} />
+                          <ChevronDown className={`w-3.5 h-3.5 ml-auto transition-transform duration-200 ${(isExpanded || isActive) ? 'rotate-180' : ''}`} />
                         )}
                       </>
                     )}
@@ -416,20 +413,21 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
                     )}
                   </button>
                   {hasSubItems && (isExpanded || isActive) && !isSidebarCollapsed && (
-                    <div className="ml-4 mt-1 space-y-1 border-l-2 border-white/20 pl-3">
+                    <div className="mt-0.5 ml-3 space-y-0.5 border-l border-slate-700 pl-2.5">
                       {item.subItems!.map(sub => {
                         const SubIcon = sub.icon;
+                        const isSubActive = currentView === sub.id;
                         return (
                           <button
                             key={sub.id}
                             onClick={() => onNavigate(sub.id)}
-                            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all ${
-                              currentView === sub.id
-                                ? 'bg-white/20 text-white font-medium'
-                                : 'text-white/60 hover:bg-white/10 hover:text-white'
+                            className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-[12px] transition-all ${
+                              isSubActive
+                                ? 'bg-sky-600/20 text-sky-400 font-medium'
+                                : 'text-slate-500 hover:bg-slate-800 hover:text-slate-300'
                             }`}
                           >
-                            <SubIcon className="w-4 h-4 flex-shrink-0" />
+                            <SubIcon className="w-3.5 h-3.5 flex-shrink-0" />
                             <span>{sub.label}</span>
                           </button>
                         );
@@ -441,20 +439,20 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
             })}
           </nav>
 
-          <div className={`${isSidebarCollapsed ? 'p-2' : 'p-4'} border-t border-white/10`}>
+          <div className={`${isSidebarCollapsed ? 'p-2' : 'p-3'} border-t border-slate-800`}>
             {!isSidebarCollapsed && (
-              <div className="px-4 py-3 bg-white/10 backdrop-blur-sm rounded-xl mb-3 border border-white/10">
-                <div className="flex items-center gap-3">
+              <div className="px-3 py-2.5 bg-slate-800 rounded-lg mb-3 border border-slate-700">
+                <div className="flex items-center gap-2.5">
                   {employeeProfile?.photo_url ? (
-                    <img src={employeeProfile.photo_url} alt="" className="w-10 h-10 rounded-full object-cover ring-2 ring-pion-cyan/50" />
+                    <img src={employeeProfile.photo_url} alt="" className="w-8 h-8 rounded-full object-cover ring-2 ring-sky-500/30" />
                   ) : (
-                    <div className="w-10 h-10 rounded-full bg-pion-cyan/20 flex items-center justify-center ring-2 ring-pion-cyan/50">
-                      <User className="w-5 h-5 text-pion-cyan" />
+                    <div className="w-8 h-8 rounded-full bg-sky-500/20 flex items-center justify-center ring-2 ring-sky-500/30">
+                      <User className="w-4 h-4 text-sky-400" />
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-white truncate">{employeeProfile?.full_name}</p>
-                    <p className="text-xs text-pion-cyan/80 truncate">{employeeProfile?.user_type_name}</p>
+                    <p className="text-xs font-medium text-white truncate">{employeeProfile?.full_name}</p>
+                    <p className="text-[11px] text-slate-400 truncate">{employeeProfile?.user_type_name}</p>
                   </div>
                 </div>
               </div>
@@ -462,21 +460,21 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
             {isSidebarCollapsed && (
               <div className="flex justify-center mb-3">
                 {employeeProfile?.photo_url ? (
-                  <img src={employeeProfile.photo_url} alt="" className="w-10 h-10 rounded-full object-cover ring-2 ring-pion-cyan/50" title={employeeProfile?.full_name} />
+                  <img src={employeeProfile.photo_url} alt="" className="w-8 h-8 rounded-full object-cover ring-2 ring-sky-500/30" title={employeeProfile?.full_name} />
                 ) : (
-                  <div className="w-10 h-10 rounded-full bg-pion-cyan/20 flex items-center justify-center ring-2 ring-pion-cyan/50" title={employeeProfile?.full_name}>
-                    <User className="w-5 h-5 text-pion-cyan" />
+                  <div className="w-8 h-8 rounded-full bg-sky-500/20 flex items-center justify-center ring-2 ring-sky-500/30" title={employeeProfile?.full_name}>
+                    <User className="w-4 h-4 text-sky-400" />
                   </div>
                 )}
               </div>
             )}
             <button
               onClick={handleSignOut}
-              className={`w-full flex items-center gap-3 ${isSidebarCollapsed ? 'justify-center px-3' : 'px-4'} py-3 text-red-300 hover:bg-red-500/20 hover:text-red-200 rounded-xl transition-colors`}
+              className={`w-full flex items-center gap-2.5 ${isSidebarCollapsed ? 'justify-center px-2' : 'px-3'} py-2 text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-lg transition-colors text-sm`}
               title={isSidebarCollapsed ? 'Sair' : undefined}
             >
-              <LogOut className="w-5 h-5" />
-              {!isSidebarCollapsed && <span className="font-semibold">Sair</span>}
+              <LogOut className="w-4 h-4" />
+              {!isSidebarCollapsed && <span className="font-medium text-[13px]">Sair</span>}
             </button>
           </div>
         </aside>
@@ -486,18 +484,18 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
 
   return (
     <>
-      <nav className="gradient-pion shadow-2xl fixed top-0 left-0 right-0 z-50 border-b border-white/10">
+      <nav className="bg-white border-b border-gray-200 fixed top-0 left-0 right-0 z-50 shadow-sm">
         <div className="px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
+          <div className="flex justify-between h-14">
             <div className="flex items-center">
-              <h1 className="text-base sm:text-lg md:text-xl font-bold text-white truncate">
-                <span className="hidden sm:inline">Pion G Plus - Sistema de Gestão Empresarial</span>
-                <span className="sm:hidden">Pion G Plus</span>
+              <h1 className="text-base sm:text-lg font-bold text-slate-800 truncate tracking-tight">
+                <span className="hidden sm:inline">Pion G Plus</span>
+                <span className="sm:hidden">Pion G+</span>
               </h1>
               {selectedBranch && (
                 <button
                   onClick={() => setSelectedBranch(null)}
-                  className="ml-3 hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white/90 text-xs font-medium transition-colors border border-white/10"
+                  className="ml-3 hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-700 text-xs font-medium transition-colors border border-sky-200"
                   title="Trocar filial"
                 >
                   <Building2 className="w-3.5 h-3.5" />
@@ -506,30 +504,31 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
               )}
             </div>
 
-            <div className="hidden md:flex items-center space-x-4">
+            <div className="hidden md:flex items-center space-x-3">
               <button
                 onClick={onToggleNoticesPanel}
-                className={`relative p-2 rounded-xl transition-all ${
+                className={`relative p-2 rounded-lg transition-all ${
                   showNoticesPanel
-                    ? 'bg-white/20 text-white backdrop-blur-sm'
-                    : 'text-white/80 hover:text-white hover:bg-white/10'
+                    ? 'bg-sky-50 text-sky-600'
+                    : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'
                 }`}
                 title="Quadro de Avisos"
               >
                 <Bell className="w-5 h-5" />
                 {unreadNotificationsCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse shadow-lg">
+                  <span className="absolute -top-0.5 -right-0.5 w-4.5 h-4.5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-sm">
                     {unreadNotificationsCount > 9 ? '9+' : unreadNotificationsCount}
                   </span>
                 )}
               </button>
+              <div className="h-6 w-px bg-slate-200"></div>
               <div className="text-right">
-                <div className="text-sm font-semibold text-white">{employeeProfile?.full_name || user?.email}</div>
-                <div className="text-xs text-pion-cyan/90">{employeeProfile?.user_type_name || 'Usuario'}</div>
+                <div className="text-sm font-medium text-slate-700">{employeeProfile?.full_name || user?.email}</div>
+                <div className="text-xs text-slate-400">{employeeProfile?.user_type_name || 'Usuario'}</div>
               </div>
               <button
                 onClick={handleSignOut}
-                className="flex items-center gap-2 px-4 py-2 text-sm text-white bg-white/10 hover:bg-red-500/20 hover:text-red-200 rounded-xl transition-colors font-semibold backdrop-blur-sm"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors font-medium"
               >
                 <LogOut className="w-4 h-4" />
                 Sair
@@ -539,24 +538,24 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
             <div className="md:hidden flex items-center gap-1">
               <button
                 onClick={onToggleNoticesPanel}
-                className={`relative w-11 h-11 flex items-center justify-center rounded-xl transition-all ${
+                className={`relative w-10 h-10 flex items-center justify-center rounded-lg transition-all ${
                   showNoticesPanel
-                    ? 'bg-white/20 text-white'
-                    : 'text-white/80 hover:text-white'
+                    ? 'bg-sky-50 text-sky-600'
+                    : 'text-slate-400 hover:text-slate-600'
                 }`}
               >
                 <Bell className="w-5 h-5" />
                 {unreadNotificationsCount > 0 && (
-                  <span className="absolute top-0.5 right-0.5 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center animate-pulse">
+                  <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
                     {unreadNotificationsCount > 9 ? '9+' : unreadNotificationsCount}
                   </span>
                 )}
               </button>
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="w-11 h-11 flex items-center justify-center text-white/80 hover:text-white rounded-xl transition-all"
+                className="w-10 h-10 flex items-center justify-center text-slate-500 hover:text-slate-700 rounded-lg transition-all"
               >
-                {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
             </div>
           </div>
@@ -564,22 +563,22 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
       </nav>
 
       {isMobileMenuOpen && (
-        <div className="md:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)} />
+        <div className="md:hidden fixed inset-0 z-40 bg-black/40 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)} />
       )}
-      <aside className={`${isMobileMenuOpen ? 'block' : 'hidden'} md:block fixed left-0 top-16 bottom-0 ${isSidebarCollapsed ? 'w-20' : 'w-64'} gradient-pion-dark overflow-y-auto z-40 transition-all duration-300 shadow-2xl`}>
+      <aside className={`${isMobileMenuOpen ? 'block' : 'hidden'} md:block fixed left-0 top-14 bottom-0 ${isSidebarCollapsed ? 'w-[68px]' : 'w-60'} bg-slate-900 overflow-y-auto z-40 transition-all duration-300 border-r border-slate-800`}>
         {canManageSystem() && onToggleSidebar && (
-          <div className="hidden md:flex justify-end p-2 border-b border-white/10">
+          <div className="hidden md:flex justify-end px-3 py-2 border-b border-slate-800">
             <button
               onClick={onToggleSidebar}
-              className="p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+              className="p-1.5 text-slate-500 hover:text-slate-300 hover:bg-slate-800 rounded-md transition-colors"
               title={isSidebarCollapsed ? 'Expandir menu' : 'Recolher menu'}
             >
-              {isSidebarCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
+              {isSidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
             </button>
           </div>
         )}
 
-        <nav className="p-4 space-y-2">
+        <nav className="p-2 space-y-0.5">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const showBadge = item.id === 'documents' && unreadDocsCount > 0 && !canManageSystem();
@@ -598,24 +597,26 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
                     setIsMobileMenuOpen(false);
                     if (item.id === 'documents') loadUnreadCount();
                   }}
-                  className={`w-full flex items-center gap-3 ${isSidebarCollapsed ? 'justify-center px-3' : 'px-4'} py-3.5 rounded-xl transition-all min-h-[44px] ${
-                    isActive
-                      ? 'bg-pion-cyan text-white shadow-lg shadow-pion-cyan/30'
-                      : 'text-white/70 hover:bg-white/10 hover:text-white'
+                  className={`w-full flex items-center gap-2.5 ${isSidebarCollapsed ? 'justify-center px-2' : 'px-3'} py-2 rounded-lg transition-all text-[13px] ${
+                    isActive && !hasSubItems
+                      ? 'bg-sky-600 text-white font-medium shadow-sm shadow-sky-600/30'
+                      : isActive && hasSubItems
+                        ? 'text-white bg-slate-800'
+                        : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
                   }`}
                   title={isSidebarCollapsed ? item.label : undefined}
                 >
-                  <Icon className="w-5 h-5 flex-shrink-0" />
+                  <Icon className="w-[18px] h-[18px] flex-shrink-0" />
                   {!isSidebarCollapsed && (
                     <>
-                      <span className="font-medium">{item.label}</span>
+                      <span className="truncate">{item.label}</span>
                       {showBadge && (
-                        <span className="ml-auto px-2 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full min-w-[20px] text-center">
+                        <span className="ml-auto px-1.5 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] text-center">
                           {unreadDocsCount > 99 ? '99+' : unreadDocsCount}
                         </span>
                       )}
                       {hasSubItems && (
-                        <ChevronDown className={`w-4 h-4 ml-auto transition-transform ${(isExpanded || isActive) ? 'rotate-180' : ''}`} />
+                        <ChevronDown className={`w-3.5 h-3.5 ml-auto transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
                       )}
                     </>
                   )}
@@ -623,10 +624,11 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
                     <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
                   )}
                 </button>
-                {hasSubItems && (isExpanded || isActive) && !isSidebarCollapsed && (
-                  <div className="ml-4 mt-1 space-y-1 border-l-2 border-white/20 pl-3">
+                {hasSubItems && isExpanded && !isSidebarCollapsed && (
+                  <div className="mt-0.5 ml-3 space-y-0.5 border-l border-slate-700 pl-2.5">
                     {item.subItems!.map(sub => {
                       const SubIcon = sub.icon;
+                      const isSubActive = currentView === sub.id;
                       return (
                         <button
                           key={sub.id}
@@ -634,14 +636,14 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
                             onNavigate(sub.id);
                             setIsMobileMenuOpen(false);
                           }}
-                          className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all ${
-                            currentView === sub.id
-                              ? 'bg-white/20 text-white font-medium'
-                              : 'text-white/60 hover:bg-white/10 hover:text-white'
+                          className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-[12px] transition-all ${
+                            isSubActive
+                              ? 'bg-sky-600/20 text-sky-400 font-medium'
+                              : 'text-slate-500 hover:bg-slate-800 hover:text-slate-300'
                           }`}
                         >
-                          <SubIcon className="w-4 h-4 flex-shrink-0" />
-                          <span>{sub.label}</span>
+                          <SubIcon className="w-3.5 h-3.5 flex-shrink-0" />
+                          <span className="truncate">{sub.label}</span>
                         </button>
                       );
                     })}
@@ -652,13 +654,13 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
           })}
         </nav>
 
-        <div className="md:hidden p-4 border-t border-white/10">
+        <div className="md:hidden p-3 border-t border-slate-800">
           <button
             onClick={handleSignOut}
-            className="w-full flex items-center gap-3 px-4 py-3 text-red-300 hover:bg-red-500/20 hover:text-red-200 rounded-xl transition-colors"
+            className="w-full flex items-center gap-2.5 px-3 py-2 text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-lg transition-colors text-sm"
           >
-            <LogOut className="w-5 h-5" />
-            <span className="font-semibold">Sair</span>
+            <LogOut className="w-4 h-4" />
+            <span className="font-medium">Sair</span>
           </button>
         </div>
       </aside>
