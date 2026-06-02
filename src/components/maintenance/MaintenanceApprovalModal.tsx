@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { X, CheckCircle, XCircle, AlertTriangle, Loader2, ChevronRight, User, Calendar, Clock, DollarSign, Package, FileText, Search, Plus, Trash2, ChevronDown } from 'lucide-react';
+import { X, CheckCircle, XCircle, AlertTriangle, Loader2, ChevronRight, User, Calendar, Package, FileText, Search, Plus, Trash2, ChevronDown } from 'lucide-react';
 import { maintenanceService } from '../../services/maintenanceService';
 import { maintenanceCadastroService, type MaintenanceMaterial } from '../../services/maintenanceCadastroService';
-import { supabase } from '../../lib/supabase';
 import type { MaintenanceOrder } from '../../types/maintenance';
 
 interface Notification {
@@ -29,11 +28,6 @@ interface ServiceOrderForm {
   action_plan: string;
 }
 
-interface SimpleEmployee {
-  id: string;
-  name: string;
-}
-
 interface Props {
   notification: Notification;
   approverName: string;
@@ -57,7 +51,6 @@ export function MaintenanceApprovalModal({ notification, approverName, onClose, 
   const [serviceForm, setServiceForm] = useState<ServiceOrderForm>(emptyServiceForm);
   const [rejectionReason, setRejectionReason] = useState('');
   const [loading, setLoading] = useState(false);
-  const [employees, setEmployees] = useState<SimpleEmployee[]>([]);
   const [technicians, setTechnicians] = useState<{ id: string; name: string }[]>([]);
   const [materialList, setMaterialList] = useState<MaintenanceMaterial[]>([]);
   const [materialSearch, setMaterialSearch] = useState('');
@@ -67,13 +60,6 @@ export function MaintenanceApprovalModal({ notification, approverName, onClose, 
   const order = notification.maintenance_orders;
 
   useEffect(() => {
-    supabase
-      .from('employees')
-      .select('id, name')
-      .eq('is_active', true)
-      .order('name')
-      .then(({ data }) => setEmployees(data || []));
-
     maintenanceCadastroService.getTechnicians().then(setTechnicians);
     maintenanceCadastroService.getMaterials().then(setMaterialList);
   }, []);
@@ -276,17 +262,10 @@ export function MaintenanceApprovalModal({ notification, approverName, onClose, 
                     onChange={e => sf('assigned_to', e.target.value)}
                     className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                   >
-                    <option value="">Selecionar responsavel...</option>
-                    <optgroup label="Tecnicos">
-                      {technicians.map(t => (
-                        <option key={t.id} value={t.name}>{t.name}</option>
-                      ))}
-                    </optgroup>
-                    <optgroup label="Funcionarios">
-                      {employees.map(e => (
-                        <option key={e.id} value={e.name}>{e.name}</option>
-                      ))}
-                    </optgroup>
+                    <option value="">Selecionar tecnico...</option>
+                    {technicians.map(t => (
+                      <option key={t.id} value={t.name}>{t.name}</option>
+                    ))}
                   </select>
                 </div>
 
