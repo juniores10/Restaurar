@@ -108,6 +108,9 @@ export function MainApp() {
       case 'user-sessions':
         return canManageSystem() ? <UserSessionsHistory /> : <EmployeeDashboard />;
       default:
+        if (currentView.startsWith('dm:') && canManageSystem()) {
+          return <DataManagement initialTab={currentView.slice(3) as any} />;
+        }
         return (isEmployee() || isTerceirizado()) ? <EmployeeDashboard /> : <MainDashboard />;
     }
   };

@@ -1,4 +1,4 @@
-import { Building2, Users, TrendingUp, MessageSquare, Bell, FileText, LogOut, Menu, X, Database, User, Home, CalendarDays, CalendarCheck, Clock, ChevronLeft, ChevronRight, ChevronDown, DollarSign, Shield, ShieldCheck, UserX, Wrench, Activity, Truck, Calendar, Package, CreditCard, BarChart3 } from 'lucide-react';
+import { Building2, Users, TrendingUp, MessageSquare, Bell, FileText, LogOut, Menu, X, Database, User, Home, CalendarDays, CalendarCheck, Clock, ChevronLeft, ChevronRight, ChevronDown, DollarSign, Shield, ShieldCheck, UserX, Wrench, Activity, Truck, Calendar, Package, CreditCard, BarChart3, MapPin, Layers, Briefcase, Circle, Tag, Target, Building } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { documentService } from '../services/documentService';
@@ -21,7 +21,7 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
   const [unreadDocsCount, setUnreadDocsCount] = useState(0);
   const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
   const [unreadEmployeeNotificationsCount, setUnreadEmployeeNotificationsCount] = useState(0);
-  const [expandedMenus, setExpandedMenus] = useState<string[]>(['factory-maintenance', 'logistics']);
+  const [expandedMenus, setExpandedMenus] = useState<string[]>(['factory-maintenance', 'logistics', 'data-management']);
 
   useEffect(() => {
     if (employeeProfile && !canManageSystem()) {
@@ -107,7 +107,22 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
       { id: 'expedition', label: 'Expedicao', icon: Package },
       { id: 'freight-management', label: 'Gestao de Frete', icon: CreditCard },
     ] },
-    { id: 'data-management', label: 'Cadastros', icon: Database },
+    { id: 'data-management', label: 'Cadastros', icon: Database, subItems: [
+      { id: 'dm:branches', label: 'Filiais', icon: Building2 },
+      { id: 'dm:workplaces', label: 'Locais', icon: MapPin },
+      { id: 'dm:divisions', label: 'Divisões', icon: Layers },
+      { id: 'dm:functions', label: 'Funções', icon: Briefcase },
+      { id: 'dm:teams', label: 'Equipes', icon: Users },
+      { id: 'dm:status', label: 'Status', icon: Circle },
+      { id: 'dm:shift_times', label: 'Horarios de Turno', icon: Clock },
+      { id: 'dm:day_options', label: 'Opcoes de Dia', icon: Calendar },
+      { id: 'dm:productivity_categories', label: 'Categorias Produtividade', icon: Tag },
+      { id: 'dm:goals_productivity', label: 'Metas Produtividade', icon: Target },
+      { id: 'dm:company_logo', label: 'Logo da Empresa', icon: Building },
+      { id: 'dm:maintenance_cadastro', label: 'Manutencao Fabrica', icon: Wrench },
+      { id: 'dm:performance_adherence', label: 'Performance Aderencia', icon: Activity },
+      { id: 'dm:suppliers', label: 'Fornecedores', icon: Truck },
+    ] },
     { id: 'holidays', label: 'Feriados', icon: CalendarCheck },
     { id: 'user-sessions', label: 'Usuarios Online', icon: Activity },
   ];
@@ -246,7 +261,7 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
                   const showBadge = item.id === 'documents' && unreadDocsCount > 0;
                   const hasSubItems = item.subItems && item.subItems.length > 0;
                   const isExpanded = expandedMenus.includes(item.id);
-                  const isActive = currentView === item.id || (hasSubItems && item.subItems!.some(sub => currentView === sub.id));
+                  const isActive = currentView === item.id || (hasSubItems && item.subItems!.some(sub => currentView === sub.id)) || (item.id === 'data-management' && currentView.startsWith('dm:'));
                   return (
                     <div key={item.id}>
                       <button
@@ -362,7 +377,7 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
               const showBadge = item.id === 'documents' && unreadDocsCount > 0;
               const hasSubItems = !!(item.subItems && item.subItems.length > 0);
               const isExpanded = expandedMenus.includes(item.id);
-              const isActive = currentView === item.id || (hasSubItems && item.subItems!.some(sub => currentView === sub.id));
+              const isActive = currentView === item.id || (hasSubItems && item.subItems!.some(sub => currentView === sub.id)) || (item.id === 'data-management' && currentView.startsWith('dm:'));
               return (
                 <div key={item.id}>
                   <button
@@ -570,17 +585,16 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
             const showBadge = item.id === 'documents' && unreadDocsCount > 0 && !canManageSystem();
             const hasSubItems = !!(item.subItems && item.subItems.length > 0);
             const isExpanded = expandedMenus.includes(item.id);
-            const isActive = currentView === item.id || (hasSubItems && item.subItems!.some(sub => currentView === sub.id));
+            const isActive = currentView === item.id || (hasSubItems && item.subItems!.some(sub => currentView === sub.id)) || (item.id === 'data-management' && currentView.startsWith('dm:'));
             return (
               <div key={item.id}>
                 <button
                   onClick={() => {
                     if (hasSubItems && !isSidebarCollapsed) {
-                      if (!expandedMenus.includes(item.id)) {
-                        setExpandedMenus(prev => [...prev, item.id]);
-                      }
+                      setExpandedMenus(prev => prev.includes(item.id) ? prev.filter(id => id !== item.id) : [...prev, item.id]);
+                    } else {
+                      onNavigate(item.id);
                     }
-                    onNavigate(item.id);
                     setIsMobileMenuOpen(false);
                     if (item.id === 'documents') loadUnreadCount();
                   }}

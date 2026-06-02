@@ -53,8 +53,8 @@ interface DayOption {
 
 type ItemType = DataType | Location | ShiftTime | DayOption;
 
-export function DataManagement() {
-  const [activeTab, setActiveTab] = useState<TabType>('branches');
+export function DataManagement({ initialTab }: { initialTab?: TabType }) {
+  const [activeTab, setActiveTab] = useState<TabType>(initialTab || 'branches');
   const [divisionSubTab, setDivisionSubTab] = useState<DivisionSubTab>('areas');
   const [items, setItems] = useState<ItemType[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -145,6 +145,10 @@ export function DataManagement() {
   };
 
   const columnLabels = getColumnLabels();
+
+  useEffect(() => {
+    if (initialTab) setActiveTab(initialTab);
+  }, [initialTab]);
 
   useEffect(() => {
     loadItems();
