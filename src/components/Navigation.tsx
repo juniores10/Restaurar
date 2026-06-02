@@ -78,7 +78,14 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
     }
   }
 
-  const adminMenuItems = [
+  type MenuItem = {
+    id: string;
+    label: string;
+    icon: React.ComponentType<{ className?: string }>;
+    subItems?: { id: string; label: string; icon: React.ComponentType<{ className?: string }> }[];
+  };
+
+  const adminMenuItems: MenuItem[] = [
     { id: 'dashboard', label: 'Dashboard', icon: Building2 },
     { id: 'employees', label: 'Colaboradores', icon: Users },
     { id: 'schedule-management', label: 'Escala do Mês', icon: CalendarDays },
@@ -101,7 +108,7 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
     { id: 'user-sessions', label: 'Usuarios Online', icon: Activity },
   ];
 
-  const employeeMenuItems = [
+  const employeeMenuItems: MenuItem[] = [
     { id: 'dashboard', label: 'Meu Painel', icon: Home },
     { id: 'schedule', label: 'Minha Escala', icon: CalendarDays },
     { id: 'payroll', label: 'Holerites e Ponto', icon: DollarSign },
@@ -113,7 +120,7 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
     ] },
   ];
 
-  const terceirizadoMenuItems = [
+  const terceirizadoMenuItems: MenuItem[] = [
     { id: 'portaria', label: 'Portaria', icon: Shield },
     { id: 'dashboard', label: 'Meu Painel', icon: Home },
     { id: 'schedule', label: 'Minha Escala', icon: CalendarDays },
@@ -356,10 +363,8 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
                     onClick={() => {
                       if (hasSubItems && !isSidebarCollapsed) {
                         setExpandedMenus(prev => prev.includes(item.id) ? prev.filter(id => id !== item.id) : [...prev, item.id]);
-                        if (!isExpanded) onNavigate(item.id);
-                      } else {
-                        onNavigate(item.id);
                       }
+                      onNavigate(item.id);
                       if (item.id === 'documents') loadUnreadCount();
                     }}
                     className={`w-full flex items-center gap-3 ${isSidebarCollapsed ? 'justify-center px-3' : 'px-4'} py-3 rounded-xl transition-all ${
@@ -387,9 +392,9 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
                       <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
                     )}
                   </button>
-                  {hasSubItems && isExpanded && !isSidebarCollapsed && (
-                    <div className="ml-4 mt-1 space-y-1 border-l border-white/20 pl-3">
-                      {item.subItems!.map(sub => {
+                  {item.subItems && item.subItems.length > 0 && (isExpanded || isActive) && !isSidebarCollapsed && (
+                    <div className="ml-4 mt-1 space-y-1 border-l-2 border-white/20 pl-3">
+                      {item.subItems.map(sub => {
                         const SubIcon = sub.icon;
                         return (
                           <button
