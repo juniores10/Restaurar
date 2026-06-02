@@ -66,6 +66,7 @@ export function MaintenanceCadastro() {
   const [matFilterEquipment, setMatFilterEquipment] = useState('');
   const [matFilterName, setMatFilterName] = useState('');
   const [matFilterTag, setMatFilterTag] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedEquipmentIds, setSelectedEquipmentIds] = useState<string[]>([]);
   const [eqDropdownOpen, setEqDropdownOpen] = useState(false);
   const eqDropdownRef = useRef<HTMLDivElement>(null);
@@ -132,6 +133,7 @@ export function MaintenanceCadastro() {
     setSelectedEquipmentIds([]);
     setEqDropdownOpen(false);
     setManualFile(null);
+    setSearchQuery('');
     if (activeTab === 'equipment') setFormData(emptyEquipmentForm);
     else if (activeTab === 'materials') setFormData(emptyMaterialForm);
     else if (activeTab === 'technicians') setFormData(emptyTechnicianForm);
@@ -411,6 +413,24 @@ export function MaintenanceCadastro() {
     });
   }, [materials, matFilterName, matFilterEquipment, matFilterTag]);
 
+  const filteredItems = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return items;
+    return items.filter(item => {
+      const name = (item.name || '').toLowerCase();
+      const tag = (item.tag_code || '').toLowerCase();
+      const manufacturer = (item.manufacturer || '').toLowerCase();
+      const model = (item.model || '').toLowerCase();
+      const sector = (item.sector || '').toLowerCase();
+      const description = (item.description || '').toLowerCase();
+      const specialty = (item.maintenance_specialties?.name || '').toLowerCase();
+      const warehouseCode = (item.warehouse_code || '').toLowerCase();
+      return name.includes(q) || tag.includes(q) || manufacturer.includes(q) ||
+        model.includes(q) || sector.includes(q) || description.includes(q) ||
+        specialty.includes(q) || warehouseCode.includes(q);
+    });
+  }, [items, searchQuery]);
+
   const exportMaterialsExcel = () => {
     const rows = filteredMaterials.map(m => ({
       'Codigo Almoxarifado': m.warehouse_code || '',
@@ -483,8 +503,7 @@ export function MaintenanceCadastro() {
               <p className="text-xs text-gray-500 mt-0.5">{currentTab.description}</p>
             </div>
             <div className="flex items-center gap-2">
-              {activeTab === 'materials' && (
-                <>
+              {activeTab === 'materials' && (                <>
                   <button
                     onClick={exportMaterialsExcel}
                     className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white text-sm rounded-lg hover:bg-emerald-700 transition-colors"
@@ -512,18 +531,33 @@ export function MaintenanceCadastro() {
               </button>
             </div>
           </div>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            <input
+              type="text"
+              value={activeTab === 'materials' ? matFilterName : searchQuery}
+              onChange={e => activeTab === 'materials' ? setMatFilterName(e.target.value) : setSearchQuery(e.target.value)}
+              placeholder={
+                activeTab === 'equipment' ? 'Pesquisar por nome, TAG, fabricante, modelo, setor...' :
+                activeTab === 'materials' ? 'Pesquisar por nome, codigo ou descricao...' :
+                activeTab === 'technicians' ? 'Pesquisar por nome ou especialidade...' :
+                activeTab === 'locations' ? 'Pesquisar por nome ou descricao...' :
+                'Pesquisar...'
+              }
+              className="w-full pl-10 pr-10 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-gray-50 focus:bg-white transition-colors"
+            />
+            {(activeTab === 'materials' ? matFilterName : searchQuery) && (
+              <button
+                onClick={() => activeTab === 'materials' ? setMatFilterName('') : setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
           {activeTab === 'materials' && (
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
-              <div className="relative sm:col-span-2">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
-                <input
-                  type="text"
-                  value={matFilterName}
-                  onChange={e => setMatFilterName(e.target.value)}
-                  placeholder="Filtrar por nome, codigo ou descricao..."
-                  className="w-full pl-8 pr-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                />
-              </div>
+              <div className="sm:col-span-2" />
               <div className="flex gap-2">
                 <select
                   value={matFilterEquipment}
@@ -958,15 +992,15 @@ export function MaintenanceCadastro() {
           <div className="flex items-center justify-center py-12">
             <Loader2 className="w-6 h-6 animate-spin text-teal-500" />
           </div>
-        ) : (activeTab === 'materials' ? filteredMaterials : items).length === 0 ? (
+        ) : (activeTab === 'materials' ? filteredMaterials : filteredItems).length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-gray-400">
             <currentTab.icon className="w-10 h-10 mb-2 opacity-30" />
-            <p className="text-sm">Nenhum cadastro encontrado</p>
-            <p className="text-xs mt-1">Clique em "Adicionar" para cadastrar</p>
+            <p className="text-sm">{searchQuery || matFilterName || matFilterEquipment || matFilterTag ? 'Nenhum resultado encontrado' : 'Nenhum cadastro encontrado'}</p>
+            <p className="text-xs mt-1">{searchQuery || matFilterName || matFilterEquipment || matFilterTag ? 'Tente outros termos de pesquisa' : 'Clique em "Adicionar" para cadastrar'}</p>
           </div>
         ) : (
           <div className="divide-y divide-gray-50">
-            {(activeTab === 'materials' ? filteredMaterials : items).map(item => (
+            {(activeTab === 'materials' ? filteredMaterials : filteredItems).map(item => (
               <div key={item.id} className="flex items-center justify-between px-5 py-3 hover:bg-gray-50 transition-colors group">
                 <div className="flex items-center gap-3 min-w-0">
                   <div className={`w-2 h-2 rounded-full flex-shrink-0 ${item.status === 0 ? 'bg-emerald-500' : 'bg-gray-300'}`} />
