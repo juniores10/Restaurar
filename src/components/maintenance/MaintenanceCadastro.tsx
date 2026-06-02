@@ -40,7 +40,7 @@ const TABS: TabConfig[] = [
 
 const emptyEquipmentForm = { name: '', tag_code: '', location_id: '', sector: '', manufacturer: '', serial_number: '', model: '', installation_date: '', hourly_cost: 0, purchase_value: 0, manual_url: '', available_from: '', available_to: '' };
 const emptySimpleForm = { name: '', description: '' };
-const emptyMaterialForm = { name: '', unit: 'un', equipment_id: '', warehouse_code: '', description: '' };
+const emptyMaterialForm = { name: '', unit: 'un', equipment_id: '', warehouse_code: '', description: '', unit_price: 0 };
 const emptyTechnicianForm = { name: '', specialty_id: '' };
 
 export function MaintenanceCadastro() {
@@ -175,6 +175,7 @@ export function MaintenanceCadastro() {
         equipment_id: item.equipment_id || '',
         warehouse_code: item.warehouse_code || '',
         description: item.description || '',
+        unit_price: item.unit_price || 0,
       });
       setSelectedEquipmentIds(item.equipment_ids || (item.equipment_id ? [item.equipment_id] : []));
     } else if (activeTab === 'technicians') {
@@ -243,6 +244,7 @@ export function MaintenanceCadastro() {
           equipment_id: firstEqId,
           warehouse_code: formData.warehouse_code || '',
           description: formData.description || '',
+          unit_price: parseFloat(formData.unit_price as any) || 0,
         };
         if (editingId) {
           await maintenanceCadastroService.updateMaterial(editingId, payload, selectedEquipmentIds);
@@ -851,7 +853,7 @@ export function MaintenanceCadastro() {
                       />
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                     <div className="sm:col-span-2">
                       <label className="block text-xs font-medium text-gray-600 mb-1">Descricao do Material</label>
                       <input
@@ -877,6 +879,18 @@ export function MaintenanceCadastro() {
                         <option value="pc">pc</option>
                         <option value="par">par</option>
                       </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Valor do Produto (R$)</label>
+                      <input
+                        type="number"
+                        min={0}
+                        step={0.01}
+                        value={formData.unit_price ?? 0}
+                        onChange={e => setFormData(p => ({ ...p, unit_price: parseFloat(e.target.value) || 0 }))}
+                        placeholder="0,00"
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                      />
                     </div>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
