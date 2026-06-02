@@ -5,6 +5,7 @@ import { maintenanceService } from '../../services/maintenanceService';
 import { maintenanceCadastroService, type MaintenanceEquipment, type MaintenanceTechnician, type MaintenanceLocation, type MaintenanceOccurrence } from '../../services/maintenanceCadastroService';
 import type { MaintenanceOrder, FaultType, MaintenanceType, ProblemOrigin, OrderPriority, OrderStatus } from '../../types/maintenance';
 import { MAINTENANCE_TYPES, PROBLEM_ORIGINS, ORDER_PRIORITIES, ORDER_STATUSES } from '../../types/maintenance';
+import { supabase } from '../../lib/supabase';
 
 interface Props {
   order: MaintenanceOrder | null;
@@ -42,12 +43,15 @@ export function MaintenanceOrderForm({ order, onClose, onSaved }: Props) {
   const [technicianList, setTechnicianList] = useState<MaintenanceTechnician[]>([]);
   const [locationList, setLocationList] = useState<MaintenanceLocation[]>([]);
   const [occurrenceList, setOccurrenceList] = useState<MaintenanceOccurrence[]>([]);
+  const [sectorList, setSectorList] = useState<{ id: string; description: string }[]>([]);
 
   useEffect(() => {
     maintenanceCadastroService.getEquipment().then(data => setEquipmentList(data.filter(e => e.status === 0)));
     maintenanceCadastroService.getTechnicians().then(data => setTechnicianList(data.filter(t => t.status === 0)));
     maintenanceCadastroService.getLocations().then(data => setLocationList(data.filter(l => l.status === 0)));
     maintenanceCadastroService.getOccurrences().then(data => setOccurrenceList(data.filter(o => o.status === 0)));
+    supabase.from('data_types').select('id, description').eq('type', 8).eq('status', 0).order('description')
+      .then(({ data }) => setSectorList(data || []));
   }, []);
 
   useEffect(() => {
@@ -239,27 +243,17 @@ export function MaintenanceOrderForm({ order, onClose, onSaved }: Props) {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Local / Setor</label>
-              {locationList.length > 0 ? (
-                <select
-                  value={form.location}
-                  onChange={e => set('location', e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                >
-                  <option value="">Selecionar local...</option>
-                  {locationList.map(l => (
-                    <option key={l.id} value={l.name}>{l.name}</option>
-                  ))}
-                </select>
-              ) : (
-                <input
-                  type="text"
-                  value={form.location}
-                  onChange={e => set('location', e.target.value)}
-                  placeholder="Ex: Linha 3, Setor de Embalagem"
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                />
-              )}
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Setor</label>
+              <select
+                value={form.location}
+                onChange={e => set('location', e.target.value)}
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+              >
+                <option value="">Selecionar setor...</option>
+                {sectorList.map(s => (
+                  <option key={s.id} value={s.description}>{s.description}</option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">Equipamento / Maquina</label>
