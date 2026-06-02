@@ -1,4 +1,4 @@
-import { Building2, Users, TrendingUp, MessageSquare, Bell, FileText, LogOut, Menu, X, Database, User, Home, CalendarDays, CalendarCheck, Clock, ChevronLeft, ChevronRight, ChevronDown, DollarSign, Shield, ShieldCheck, UserX, Wrench, Activity, Truck, Calendar } from 'lucide-react';
+import { Building2, Users, TrendingUp, MessageSquare, Bell, FileText, LogOut, Menu, X, Database, User, Home, CalendarDays, CalendarCheck, Clock, ChevronLeft, ChevronRight, ChevronDown, DollarSign, Shield, ShieldCheck, UserX, Wrench, Activity, Truck, Calendar, Package, CreditCard } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { documentService } from '../services/documentService';
@@ -21,7 +21,7 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
   const [unreadDocsCount, setUnreadDocsCount] = useState(0);
   const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
   const [unreadEmployeeNotificationsCount, setUnreadEmployeeNotificationsCount] = useState(0);
-  const [expandedMenus, setExpandedMenus] = useState<string[]>(['factory-maintenance']);
+  const [expandedMenus, setExpandedMenus] = useState<string[]>(['factory-maintenance', 'logistics']);
 
   useEffect(() => {
     if (employeeProfile && !canManageSystem()) {
@@ -102,7 +102,10 @@ export function Navigation({ currentView, onNavigate, onToggleNoticesPanel, show
     { id: 'factory-maintenance', label: 'OS Manutencao', icon: Wrench, subItems: [
       { id: 'preventive-schedule', label: 'Agenda de Preventivas', icon: Calendar },
     ] },
-    { id: 'logistics', label: 'Logistica', icon: Truck },
+    { id: 'logistics', label: 'Logistica', icon: Truck, subItems: [
+      { id: 'expedition', label: 'Expedicao', icon: Package },
+      { id: 'freight-management', label: 'Gestao de Frete', icon: CreditCard },
+    ] },
     { id: 'data-management', label: 'Cadastros', icon: Database },
     { id: 'holidays', label: 'Feriados', icon: CalendarCheck },
     { id: 'user-sessions', label: 'Usuarios Online', icon: Activity },

@@ -24,6 +24,7 @@ import { AbsenteeismDashboard } from './absenteeism';
 import { FactoryMaintenance } from './maintenance/FactoryMaintenance';
 import { PreventiveSchedule } from './maintenance/PreventiveSchedule';
 import { FreightManagement } from './logistics';
+import { ExpeditionManagement } from './logistics/ExpeditionManagement';
 import { TeamProductivityManagement } from './team-productivity/TeamProductivityManagement';
 import { EmployeeNotificationPanel } from './EmployeeNotificationPanel';
 import { UserSessionsHistory } from './UserSessionsHistory';
@@ -85,7 +86,10 @@ export function MainApp() {
       case 'preventive-schedule':
         return <PreventiveSchedule />;
       case 'logistics':
+      case 'freight-management':
         return canManageSystem() ? <FreightManagement /> : <EmployeeDashboard />;
+      case 'expedition':
+        return canManageSystem() ? <ExpeditionManagement /> : <EmployeeDashboard />;
       case 'portaria':
         return isTerceirizado() ? <Portaria /> : <EmployeeDashboard />;
       case 'suggestions':
