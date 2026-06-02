@@ -32,6 +32,7 @@ const originColors: Record<string, string> = {
 
 export function MaintenanceDashboard({ orders }: Props) {
   const [equipmentList, setEquipmentList] = useState<any[]>([]);
+  const [technicianList, setTechnicianList] = useState<any[]>([]);
 
   useEffect(() => {
     supabase
@@ -39,6 +40,10 @@ export function MaintenanceDashboard({ orders }: Props) {
       .select('id, name, sector, available_from, available_to, status')
       .eq('status', 0)
       .then(({ data }) => setEquipmentList(data || []));
+    supabase
+      .from('maintenance_technicians')
+      .select('name, maintenance_specialties(name)')
+      .then(({ data }) => setTechnicianList(data || []));
   }, []);
 
   const availabilityChartData = useMemo(() => {
@@ -109,6 +114,23 @@ export function MaintenanceDashboard({ orders }: Props) {
       }))
       .sort((a, b) => b.disponivel - a.disponivel);
   }, [equipmentList, orders]);
+
+  const specialtyOrdersData = useMemo(() => {
+    const techMap: Record<string, string> = {};
+    technicianList.forEach((t: any) => {
+      if (t.maintenance_specialties?.name) {
+        techMap[t.name] = t.maintenance_specialties.name;
+      }
+    });
+    const counts: Record<string, number> = {};
+    orders.forEach(o => {
+      const specialty = techMap[o.assigned_to] || 'Sem especialidade';
+      counts[specialty] = (counts[specialty] || 0) + 1;
+    });
+    return Object.entries(counts)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value);
+  }, [orders, technicianList]);
 
   const stats = useMemo(() => {
     const total = orders.length;
@@ -351,6 +373,24 @@ export function MaintenanceDashboard({ orders }: Props) {
               </ResponsiveContainer>
             </div>
           )}
+        </div>
+      )}
+
+      {specialtyOrdersData.length > 0 && (
+        <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+          <h3 className="text-sm font-bold text-gray-700 mb-1">Total de Ordens por Especialidade</h3>
+          <p className="text-xs text-gray-400 mb-4">Distribuicao de chamados agrupados pela especialidade do tecnico</p>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={specialtyOrdersData} margin={{ top: 10, right: 10, bottom: 40, left: 10 }} layout="vertical">
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+              <XAxis type="number" tick={{ fontSize: 11 }} allowDecimals={false} />
+              <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={140} />
+              <Tooltip formatter={(value: any) => [value, 'Ordens']} />
+              <Bar dataKey="value" name="Ordens" fill="#0d9488" radius={[0, 6, 6, 0]} barSize={22}>
+                {specialtyOrdersData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       )}
 
